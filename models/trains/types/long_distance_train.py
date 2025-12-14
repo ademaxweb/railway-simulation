@@ -1,7 +1,8 @@
 from ..train import Train
 from ..train_type import TrainType
+from ..registry import register_train_class
 
-
+@register_train_class(TrainType.LONG_DISTANCE)
 class LongDistanceTrain(Train):
     def __init__(
             self,

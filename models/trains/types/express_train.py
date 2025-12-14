@@ -1,7 +1,8 @@
 from ..train_type import TrainType
 from ..train import Train
+from ..registry import register_train_class
 
-
+@register_train_class(TrainType.EXPRESS)
 class ExpressTrain(Train):
     def __init__(self, wagon_count: int, wagon_capacity: int, model_name: str = ""):
         super().__init__(
