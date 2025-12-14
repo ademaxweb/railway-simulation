@@ -1,19 +1,64 @@
-import utils
+from utils import ID
 
 class Wagon:
+    # Идентифкатор
+    _id: ID
+    # Вместимость
+    _cap: int = 0
+    # Текущая заполненость
+    _person_count: int = 0
 
-    id:int = 0
-    capacity:int = 0
-    people:int = 0
+    # Constructor
+    def __init__(self, capacity: int = 0):
+        self._id = ID()
+        self._cap = capacity
 
+    # Получить идентификатор вгона
+    @property
+    def id(self) -> ID:
+        return self._id
 
-    def __init__(self, capacity:int):
-        self.id = utils.generate_int_id()
-        self.capacity = capacity
+    # Получить вместимость вагона
+    @property
+    def cap(self) -> int:
+        return self._cap
 
-    def __str__(self):
-        return f"[Вагон №{self.id} ({self.people}/{self.capacity})]"
+    # Получить кол-во людей в вагоне
+    @property
+    def person_count(self) -> int:
+        return self._person_count
 
+    def set_capacity(self, c: int) -> None:
+        self._cap = c
 
-def create_wagon(cap:int = 100):
-    return Wagon(capacity=cap)
+    # Впустить людей в вагон
+    def add_person(self, count:int = 1) -> int:
+        available = self._cap - self._person_count
+
+        # Если вагон больше не может вместить людей
+        if available < 1:
+            return 0
+
+        # Добавляемое кол-во людей
+        adding = min(available, count)
+
+        self._person_count += 1
+
+        return adding
+
+    # Выпустить людей из вагона
+    def remove_person(self, count:int = 1) -> int:
+        # Если в вагоне не осталось людей
+        if self._person_count < 1:
+            return 0
+
+        # Убавляемое кол-во людей
+        removing = min(count, self._person_count)
+
+        self._person_count -= removing
+
+        return removing
+
+    # ASCII визуализация
+    def string(self) -> str:
+        return f"[Вагон №{self._id} ({self._person_count}/{self._cap})]"
