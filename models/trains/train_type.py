@@ -1,7 +1,4 @@
-from .train import  Train
-from .types import PassengerTrain, ExpressTrain, FreightTrain, LongDistanceTrain, UnknownTrain
 from enum import Enum
-from typing import Type
 
 class TrainType(str, Enum):
     UNKNOWN = "unknown"
@@ -25,14 +22,3 @@ class TrainType(str, Enum):
             return cls(s.lower())
         except ValueError:
             return cls.UNKNOWN
-
-
-    def train_class(self) -> Type[Train]:
-        return {
-            TrainType.UNKNOWN: UnknownTrain,
-            TrainType.PASSENGER: PassengerTrain,
-            TrainType.EXPRESS: ExpressTrain,
-            TrainType.FREIGHT: FreightTrain,
-            TrainType.LONG_DISTANCE: LongDistanceTrain,
-        }[self]
-

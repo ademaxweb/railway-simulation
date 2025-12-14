@@ -1,0 +1,7 @@
+{
+  "model_name": "Иволга",
+  "type": "passenger",
+  "max_speed": 120,
+  "wagon_count": 0,
+  "wagon_capacity": 90
+}

@@ -1,0 +1,7 @@
+{
+  "model_name": "ЭД4М",
+  "type": "passenger",
+  "max_speed": 90,
+  "wagon_count": 12,
+  "wagon_capacity": 120
+}

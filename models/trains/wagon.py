@@ -1,17 +1,16 @@
 from utils import ID
 
 class Wagon:
-    # Идентифкатор
-    _id: ID
-    # Вместимость
-    _cap: int = 0
-    # Текущая заполненость
-    _person_count: int = 0
+
 
     # Constructor
     def __init__(self, capacity: int = 0):
-        self._id = ID()
-        self._cap = capacity
+        # Идентифкатор
+        self._id: ID = ID()
+        # Вместимость
+        self._cap: int = capacity
+        # Текущая заполненость
+        self._person_count: int = 0
 
     # Получить идентификатор вгона
     @property

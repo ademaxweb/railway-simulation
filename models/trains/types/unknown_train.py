@@ -1,14 +1,9 @@
-from ..registry import register_train_class
 from ..train_type import TrainType
+from ..dto import TrainConfig
 from ..train import Train
+from ..registry import register_train_class
 
 @register_train_class(TrainType.UNKNOWN)
 class UnknownTrain(Train):
-    def __init__(self, wagon_count: int, wagon_capacity: int, model_name: str = ""):
-        super().__init__(
-            t=TrainType.UNKNOWN,
-            max_speed=0,
-            model_name=model_name,
-            wagon_count=wagon_count,
-            wagon_capacity=wagon_capacity
-        )
+    def __init__(self, cfg: TrainConfig):
+        super().__init__(cfg)

@@ -4,8 +4,11 @@ from .generate_int_id import generate_int_id
 class ID:
     __v: int = 0
 
-    def __init__(self):
-        self.generate()
+    def __init__(self, v: int = 0):
+        if v == 0:
+            self.generate()
+        else:
+            self.__v = v
 
     def generate(self):
         self.__v = generate_int_id()
