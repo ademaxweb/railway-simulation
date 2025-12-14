@@ -1,0 +1,20 @@
+[
+  {
+    "station_from": 1001,
+    "station_to": 1002,
+    "distance": 3.1,
+    "max_speed": 60.0
+  },
+  {
+    "station_from": 1002,
+    "station_to": 1003,
+    "distance": 2.2,
+    "max_speed": 80.0
+  },
+  {
+    "station_from": 1003,
+    "station_to": 1004,
+    "distance": 3.5,
+    "max_speed": 100.0
+  }
+]

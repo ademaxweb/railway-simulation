@@ -1,5 +1,17 @@
+from typing import Dict
 from utils import ID
 from .dto import StationConfig
+
+STATION_REGISTRY: Dict[ID, Station] = {}
+
+def register_station(station: Station):
+    STATION_REGISTRY[station.id] = station
+
+def get_station_by_id(id: ID) -> Station | None:
+    if id in STATION_REGISTRY:
+        return STATION_REGISTRY[id]
+
+    return None
 
 class Station:
     def __init__(self, cfg: StationConfig):
@@ -11,6 +23,8 @@ class Station:
         self._cap: int = cfg.capacity
         # Текущая заполненность
         self._person_count: int = 0
+
+        register_station(self)
 
     @property
     def id(self) -> ID:
