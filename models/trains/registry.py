@@ -1,6 +1,7 @@
 from typing import Dict, Type
 
-from . import TrainType, Train
+from .train_type import TrainType
+from .train import Train
 
 TRAIN_REGISTRY: Dict[TrainType, Type[Train]] = {}
 

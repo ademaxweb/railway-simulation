@@ -41,7 +41,7 @@ class Wagon:
         # Добавляемое кол-во людей
         adding = min(available, count)
 
-        self._person_count += 1
+        self._person_count += adding
 
         return adding
 

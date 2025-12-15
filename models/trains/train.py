@@ -67,14 +67,27 @@ class Train:
     def set_speed(self, speed: float):
         self._speed = speed
 
-    def string(self) -> str:
+    def add_person(self, count: int = 1) -> int:
+        if count <= 0 or not self._wagons:
+            return 0
+
+        remaining = count
+
+        for w in self._wagons:
+            remaining -= w.add_person(remaining)
+            if remaining <= 0:
+                break
+
+        return count - remaining
+
+    def string(self, only_train:bool = False) -> str:
         wagons_str = '=='.join(map(lambda w: w.string(), self._wagons))
         persons_str = f"{self.person_count}/{self.capacity}({round(self.filling_percentage)}%)"
         speed_str = f"{round(self.speed, 2)}/{round(self.max_speed, 2)} км/ч"
         name_str = f"{self._config.type} поезд {self._config.model_name} №{self._id}"
 
 
-        return f'<{name_str}  {persons_str}  {speed_str}]=={wagons_str}'
+        return f'<{name_str}  {persons_str}  {speed_str}]{"" if only_train else "==="+wagons_str}'
 
     def __repr__(self) -> str:
         return self.string()
