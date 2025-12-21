@@ -80,6 +80,13 @@ class Train:
 
         return count - remaining
 
+    def string_short(self)->str:
+        persons_str = f"{self.person_count}/{self.capacity}({round(self.filling_percentage)}%)"
+        speed_str = f"{round(self.speed, 2)}/{round(self.max_speed, 2)} км/ч"
+        name_str = f"{self._config.type} поезд {self._config.model_name} №{self._id}"
+
+        return f"<{name_str}  {persons_str}  {speed_str}]"
+
     def string(self, only_train:bool = False) -> str:
         wagons_str = '=='.join(map(lambda w: w.string(), self._wagons))
         persons_str = f"{self.person_count}/{self.capacity}({round(self.filling_percentage)}%)"
@@ -91,3 +98,6 @@ class Train:
 
     def __repr__(self) -> str:
         return self.string()
+
+    def __str__(self) -> str:
+        return self.string_short()

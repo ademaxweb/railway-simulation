@@ -24,5 +24,13 @@ class Segment:
     def station_to(self) -> Station:
         return self._to
 
+    @property
+    def distance(self) -> float:
+        return self._distance
+
+    @property
+    def max_speed(self) -> float:
+        return self._max_speed
+
     def __repr__(self):
         return f"{self._from.name}--- {self._distance:.2f}км ---> {self._to.name}"
