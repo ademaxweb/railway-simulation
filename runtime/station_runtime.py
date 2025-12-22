@@ -1,6 +1,6 @@
 import random
 from typing import Dict
-
+import math
 from models.trains import Train
 from models.stations import Station
 from models.events.time_events import RushHourStarted, RushHourEnded
@@ -95,12 +95,14 @@ class StationRuntime:
     def advance(self, dt: float, sim_time: float) -> None:
         # генерация пассажиров на станции
         generated = self.generator.generate(dt, sim_time)
+
         if generated > 0:
             if self.station.fullness_percentage > 80:
-                generated *= (random.randint(30, 60) / 100)
-                generated = int(generated)
+                factor = random.uniform(0, 1)
+            else: factor = 1
 
-            self.station.add_person(generated)
+            if factor > 0.75:
+                self.station.add_person(generated)
 
         self._process_unloading(dt)
 
