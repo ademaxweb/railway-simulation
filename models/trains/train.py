@@ -43,6 +43,10 @@ class Train:
         return self._config.model_name
 
     @property
+    def wagons_count(self) -> int:
+        return len(self._wagons)
+
+    @property
     def capacity(self) -> int:
         return reduce(lambda cap, w: cap + w.cap, self._wagons, 0)
 
@@ -75,6 +79,21 @@ class Train:
 
         for w in self._wagons:
             remaining -= w.add_person(remaining)
+            if remaining <= 0:
+                break
+
+        return count - remaining
+
+    def remove_person(self, count: int = 1) -> int:
+        if count <= 0 or not self._wagons:
+            return 0
+
+        remaining = count
+
+        for w in self._wagons:
+            removed = w.remove_person(remaining)
+            remaining -= removed
+
             if remaining <= 0:
                 break
 

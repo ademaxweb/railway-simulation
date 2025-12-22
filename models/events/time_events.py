@@ -18,6 +18,7 @@ class RushHourEnded(Event):
 class TimeMarkerReached(Event):
     def __init__(self, sim_time: float):
         self.sim_time = sim_time
+        print(self)
         super().__init__()
 
     def __str__(self) -> str:
