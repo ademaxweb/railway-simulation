@@ -1,3 +1,5 @@
+from typing import Iterable, Tuple
+
 from models.events.time_events import (
     TimeMarkerReached,
     RushHourStarted,
@@ -6,13 +8,27 @@ from models.events.time_events import (
 
 
 class RushHourRuntime:
-    def __init__(self, event_manager):
-        self.event_manager = event_manager
-        self._is_rush: bool = False
+    """
+    Управляет режимом «час-пик» на основе интервалов времени суток.
 
-        # часы начала и конца
-        self._start_hours = {7, 17}
-        self._end_hours = {9, 19}
+    Интервалы задаются в секундах внутри суток:
+    [(start_sec, end_sec), ...]
+    где start_sec <= t < end_sec  → час-пик
+    """
+
+    DAY_SECONDS: int = 24 * 3600
+
+    def __init__(
+        self,
+        event_manager,
+        intervals: Iterable[Tuple[int, int]],
+    ):
+        self.event_manager = event_manager
+
+        # интервалы час-пика (в секундах суток)
+        self._intervals: list[Tuple[int, int]] = list(intervals)
+
+        self._is_rush: bool = False
 
         event_manager.subscribe(
             TimeMarkerReached,
@@ -20,13 +36,18 @@ class RushHourRuntime:
         )
 
     def _on_time_marker(self, event: TimeMarkerReached) -> None:
-        total = int(event.sim_time)
-        hour = total // 3600
+        # время внутри суток
+        day_time: int = int(event.sim_time) % self.DAY_SECONDS
 
-        if hour in self._start_hours and not self._is_rush:
+        in_rush: bool = any(
+            start <= day_time < end
+            for start, end in self._intervals
+        )
+
+        if in_rush and not self._is_rush:
             self._is_rush = True
             self.event_manager.emit(RushHourStarted())
 
-        elif hour in self._end_hours and self._is_rush:
+        elif not in_rush and self._is_rush:
             self._is_rush = False
             self.event_manager.emit(RushHourEnded())

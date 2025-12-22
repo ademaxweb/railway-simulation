@@ -35,7 +35,12 @@ class Simulation:
             info_interval=60 * 60
         )
 
-        self._rush_hour_runtime = RushHourRuntime(self.event_manager)
+        self._rush_hour_runtime = RushHourRuntime(
+            self.event_manager,
+            intervals=[
+                (7 * 3600, 10 * 3600)
+            ]
+        )
 
     # ---------- конфигурация ----------
 

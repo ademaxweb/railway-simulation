@@ -95,4 +95,4 @@ sim.add_station(s4, PassengersGenerator(base_rate=0.2, variation=0.1))
 sim.add_route(route2, train2)
 
 # старт
-sim.run(sim_seconds_per_real_second=60*60)
+sim.run(sim_seconds_per_real_second=60*60*2)
