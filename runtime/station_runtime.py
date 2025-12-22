@@ -101,7 +101,7 @@ class StationRuntime:
                 factor = random.uniform(0, 1)
             else: factor = 1
 
-            if factor > 0.75:
+            if factor > 0.85:
                 self.station.add_person(generated)
 
         self._process_unloading(dt)
