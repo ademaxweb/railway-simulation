@@ -34,6 +34,9 @@ class RouteRuntime:
         elif isinstance(stage, RouteStageSegment):
             speed = min(self.train.max_speed, stage.segment.max_speed)
             self.train.set_speed(speed)
+            self.event_manager.emit(
+                TrainDepartedFromStation(self.train, stage.segment.station_from)
+            )
 
         self.stage_runtime = StageRuntime(
             stage,
@@ -45,25 +48,17 @@ class RouteRuntime:
         if event.train is not self.train:
             return
 
-        stage = self.route.stages[self.stage_index]
-        station = stage.segment.station_to
-
-        self.event_manager.emit(
-            TrainArrivedAtStation(self.train, station)
-        )
-
         self.stage_index += 1
+
+        if self.stage_index >= len(self.route.stages):
+            self.finished = True
+            return
+
         self._enter_stage(self.route.stages[self.stage_index])
 
     def _on_finished_station_wait(self, event: TrainFinishedStationWait):
         if event.train is not self.train:
             return
-
-        stage = self.route.stages[self.stage_index]
-
-        self.event_manager.emit(
-            TrainDepartedFromStation(self.train, stage.station)
-        )
 
         self.stage_index += 1
 
@@ -73,9 +68,11 @@ class RouteRuntime:
 
         self._enter_stage(self.route.stages[self.stage_index])
 
-    def advance(self, dt: float):
-        if not self.finished:
-            self.stage_runtime.advance(dt)
+    def advance(self, dt: float) -> None:
+        remaining: float = dt
+
+        while remaining > 0.0 and not self.finished:
+            remaining = self.stage_runtime.advance(remaining)
 
     def __str__(self):
         return str(self.stage_runtime)
