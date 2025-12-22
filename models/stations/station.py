@@ -28,6 +28,12 @@ class Station:
     def persons_count(self) -> int:
         return self._person_count
 
+    @property
+    def fullness_percentage(self) -> float:
+        if self._cap <= 0:
+            return 0
+        return self._person_count / self._cap * 100
+
     # Задать вместимость
     def set_capacity(self, capacity: int):
         self._cap = capacity

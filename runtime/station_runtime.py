@@ -96,9 +96,14 @@ class StationRuntime:
         # генерация пассажиров на станции
         generated = self.generator.generate(dt, sim_time)
         if generated > 0:
+            if self.station.fullness_percentage > 80:
+                generated *= (random.randint(30, 60) / 100)
+                generated = int(generated)
+
             self.station.add_person(generated)
 
         self._process_unloading(dt)
+
         self._process_boarding(dt)
 
     # -------- высадка --------
