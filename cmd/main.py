@@ -90,7 +90,7 @@ route = Route([
 ])
 
 # ---------- Simulation ----------
-sim = Simulation(render_interval=1, start_time=6.8 * 60 * 60)
+sim = Simulation(render_interval=1, start_time=6.6 * 60 * 60)
 
 # пассажиропотоки (чел / сек)
 sim.add_station(s1, PassengersGenerator(base_rate=0.6, variation=0.9, rush_multiplier=5))
@@ -100,8 +100,8 @@ sim.add_station(s4, PassengersGenerator(base_rate=0.2, variation=0.5))
 sim.add_station(s5, PassengersGenerator(base_rate=0.4, variation=0.5))
 
 # маршруты
-sim.add_train_generator(route, [ivolga, ed4m], 300)
+sim.add_train_generator(route, [ivolga, ed4m], 240)
 
 
 # старт
-sim.run(sim_seconds_per_real_second=30, render=True)
+sim.run(sim_seconds_per_real_second=60, render=True)

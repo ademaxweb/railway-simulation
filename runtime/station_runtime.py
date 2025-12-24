@@ -21,8 +21,8 @@ class StationRuntime:
 
     BOARDING_VARIATION: float = 0.25
 
-    UNLOAD_PERCENT_MIN: float = 0.02
-    UNLOAD_PERCENT_MAX: float = 0.2
+    UNLOAD_PERCENT_MIN: float = 0.05
+    UNLOAD_PERCENT_MAX: float = 0.3
 
     # -------- инициализация --------
 
