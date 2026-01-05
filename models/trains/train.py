@@ -115,6 +115,18 @@ class Train:
 
         return f'<{name_str}  {persons_str}  {speed_str}]{"" if only_train else "==="+wagons_str}'
 
+    def to_dict(self) -> dict:
+        return {
+            "id": self._id,
+            "name": self.model_name,
+            "type": str(self._config.type),
+            "person_count": self.person_count,
+            "capacity": self.capacity,
+            "filling_percentage": round(self.filling_percentage, 2),
+            "speed": self.speed,
+            "max_speed": self.max_speed
+        }
+
     def __repr__(self) -> str:
         return self.string()
 

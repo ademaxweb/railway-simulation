@@ -1,4 +1,8 @@
+from models.routes.route_stage import RouteStage
+from runtime.event_manager import EventManager
 from runtime.stage_runtime import StageRuntime
+from models.routes.route import Route
+from models.trains.train import Train
 from models.routes.route_stage_station import RouteStageStation
 from models.routes.route_stage_segment import RouteStageSegment
 from models.events.train_events import (
@@ -10,12 +14,13 @@ from models.events.train_events import (
 
 
 class RouteRuntime:
-    def __init__(self, route, train, event_manager):
+    def __init__(self, route: Route, train: Train, event_manager: EventManager):
         self.route = route
         self.train = train
         self.event_manager = event_manager
 
         self.stage_index = 0
+        self.stage_runtime = None
         self.finished = False
 
         event_manager.subscribe(TrainFinishedSegment, self._on_finished_segment)
@@ -23,6 +28,10 @@ class RouteRuntime:
 
         # стартуем с первой стадии
         self._enter_stage(self.route.stages[0])
+
+    @property
+    def current_stage(self) -> StageRuntime | None:
+        return self.stage_runtime
 
     def _enter_stage(self, stage):
         if isinstance(stage, RouteStageStation):

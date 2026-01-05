@@ -2,6 +2,7 @@ import time
 from typing import List
 
 from runtime.route_runtime import RouteRuntime
+from runtime.simdata.sim_data import SimData
 from runtime.station_runtime import StationRuntime
 from runtime.passengers_generator import PassengersGenerator
 from runtime.event_manager import EventManager
@@ -16,6 +17,7 @@ from models.trains import Train, TrainConfig
 from models.stations import Station
 from models.events.train_events import TrainGenerated
 from models.events.statistics_event import TrainsStatistics, SaveStatistics
+from models.events.simulation_data_event import SimulationDataUpdate
 
 
 
@@ -56,6 +58,9 @@ class Simulation:
 
         self.event_manager.subscribe(TrainGenerated, self._on_train_generated)
 
+    # ---------- EventManager  ----------
+    def get_event_manager(self) -> EventManager:
+        return self.event_manager
 
     # ---------- конфигурация ----------
 
@@ -133,10 +138,22 @@ class Simulation:
                 last_save_stats = self.sim_time
 
             # --- вывод ---
-            if render:
-                if now - last_render >= self.render_interval:
+
+            if now - last_render >= self.render_interval:
+                if render:
                     self.render()
-                    last_render = now
+
+                sim_data = SimData()
+
+                for rr in list(self._route_runtimes):
+                    sim_data.add_route_data(rr)
+
+                for sr in self._station_runtimes:
+                    sim_data.add_station_data(sr)
+
+                self.event_manager.emit(SimulationDataUpdate(sim_data))
+
+                last_render = now
 
 
 

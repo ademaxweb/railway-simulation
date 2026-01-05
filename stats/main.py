@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 JSON_PATH = Path("stats/trains.json")
 OUTPUT_DIR = Path("stats/plots")
-METRIC_KEY = "min_fullness_percentage"
+METRIC_KEY = "avg_persons_in_train"
 
 
 def load_metrics(path: Path):

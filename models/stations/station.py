@@ -1,4 +1,4 @@
-from utils import ID
+from utils import ID, Pos
 from .dto import StationConfig
 
 class Station:
@@ -11,6 +11,8 @@ class Station:
         self._cap: int = cfg.capacity
         # Текущая заполненность
         self._person_count: int = 0
+        # Позиция для рендера
+        self._pos: Pos = cfg.position
 
     @property
     def id(self) -> ID:
@@ -33,6 +35,10 @@ class Station:
         if self._cap <= 0:
             return 0
         return self._person_count / self._cap * 100
+
+    @property
+    def pos(self) -> Pos:
+        return self._pos
 
     # Задать вместимость
     def set_capacity(self, capacity: int):

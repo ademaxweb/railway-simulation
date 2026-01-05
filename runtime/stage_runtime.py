@@ -12,6 +12,7 @@ class StageRuntime:
         self.train = train
         self.event_manager = event_manager
         self.finished = False
+        self.progress_percentage: float = 0
 
         if isinstance(stage, RouteStageStation):
             self.time_left = stage.stop_time
@@ -27,12 +28,14 @@ class StageRuntime:
             if dt >= self.time_left:
                 dt -= self.time_left
                 self.finished = True
+                self.progress_percentage = 100
                 self.event_manager.emit(
                     TrainFinishedStationWait(self.train)
                 )
                 return dt
             else:
                 self.time_left -= dt
+                self.progress_percentage = (1 - self.time_left / self.stage.stop_time) * 100
                 return 0.0
 
         elif isinstance(self.stage, RouteStageSegment):
@@ -43,12 +46,14 @@ class StageRuntime:
                 time_spent = self.distance_left / speed * 3600
                 dt -= time_spent
                 self.finished = True
+                self.progress_percentage = 100
                 self.event_manager.emit(
                     TrainFinishedSegment(self.train)
                 )
                 return dt
             else:
                 self.distance_left -= step
+                self.progress_percentage = (1 - self.distance_left / self.stage.segment.distance) * 100
                 return 0.0
 
         return dt

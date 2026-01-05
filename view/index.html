@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rail Simulation Viewer</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(18, 24, 45, 0.78);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.62);
+      --accent: #7dd3fc;
+      --accent2: #a7f3d0;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(125, 211, 252, 0.10), transparent 60%),
+                  radial-gradient(1000px 700px at 80% 30%, rgba(167, 243, 208, 0.08), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow: hidden;
+    }
+
+    canvas { display:block; width:100vw; height:100vh; cursor:grab; }
+    canvas:active { cursor:grabbing; }
+
+    .hud {
+      position: fixed;
+      top: 14px; left: 14px; right: 14px;
+      display: flex;
+      gap: 12px;
+      pointer-events: none;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .panel {
+      pointer-events: auto;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+    .title { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--danger);
+      box-shadow: 0 0 14px rgba(251, 113, 133, 0.55);
+    }
+    .dot.ok {
+      background: var(--accent2);
+      box-shadow: 0 0 14px rgba(167, 243, 208, 0.55);
+    }
+    .h1 { font-weight: 650; letter-spacing: 0.2px; }
+    .row {
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    .btns { display:flex; gap:8px; align-items:center; }
+    button {
+      pointer-events:auto;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.92);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: transform 0.06s ease, background 0.15s ease;
+    }
+    button:hover { background: rgba(255,255,255,0.12); }
+    button:active { transform: translateY(1px); }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      transform: translate(10px, 10px);
+      background: rgba(15, 20, 38, 0.9);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.92);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 0.10s ease;
+      max-width: 320px;
+      line-height: 1.25;
+    }
+    .tooltip.show { opacity: 1; }
+    .tooltip .muted { color: rgba(255,255,255,0.65); }
+    .tooltip .grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 4px 10px;
+      align-items: baseline;
+    }
+    .tooltip .k { color: rgba(255,255,255,0.65); }
+    .tooltip .v { color: rgba(255,255,255,0.92); }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div class="hud">
+    <div class="panel" style="min-width: 320px; max-width: 560px;">
+      <div class="title">
+        <div id="connDot" class="dot"></div>
+        <div class="h1">Rail Simulation Viewer</div>
+      </div>
+      <div class="row">
+        <div>WS: <span id="connText" style="color: rgba(255,255,255,0.85)">disconnected</span></div>
+        <div>•</div>
+        <div>Stations: <span id="stCount">0</span></div>
+        <div>Segments: <span id="segCount">0</span></div>
+        <div>Trains: <span id="trCount">0</span></div>
+      </div>
+      <div class="row" style="margin-top: 8px;">
+        <span class="kbd">Wheel</span> zoom
+        <span class="kbd">Drag</span> pan
+        <span class="kbd">F</span> fit
+        <span class="kbd">R</span> reset
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="btns">
+        <button id="btnFit">Fit</button>
+        <button id="btnReset">Reset</button>
+        <button id="btnReconnect">Reconnect</button>
+      </div>
+      <div class="row" style="margin-top: 8px;">
+        <span class="muted">Hint:</span> наведите курсор на станцию/поезд.
+      </div>
+    </div>
+  </div>
+
+  <div id="tip" class="tooltip"></div>
+
+  <script>
+    // ====== CONFIG ======
+    const WS_URL = "ws://ademaxhub.ru:8765"; // поменяйте при необходимости
+    const WORLD_UNIT_TO_PX = 80;
+
+    // ====== STATE ======
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d", { alpha: false });
+
+    const connDot = document.getElementById("connDot");
+    const connText = document.getElementById("connText");
+    const stCount = document.getElementById("stCount");
+    const segCount = document.getElementById("segCount");
+    const trCount = document.getElementById("trCount");
+
+    const tip = document.getElementById("tip");
+    let ws = null;
+
+    const model = {
+      stations: new Map(), // id -> {id,name,position:{x,y}, persons_count}
+      segments: new Map(), // id -> {id, from, to}
+      routes: [],          // array of {train:{...}, stage:{id,type}, stage_progress}
+      lastUpdateAt: 0
+    };
+
+    const cam = { scale: 1.0, offsetX: 0, offsetY: 0, minScale: 0.1, maxScale: 8.0 };
+    let dpr = 1;
+    let isPanning = false;
+    let panLast = { x: 0, y: 0 };
+    let mouse = { x: 0, y: 0, worldX: 0, worldY: 0 };
+    let hover = { kind: null, id: null };
+
+    // ====== HELPERS ======
+    function resize() {
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      requestRender();
+    }
+
+    function worldToScreen(wx, wy) { return { x: wx * cam.scale + cam.offsetX, y: wy * cam.scale + cam.offsetY }; }
+    function screenToWorld(sx, sy) { return { x: (sx - cam.offsetX) / cam.scale, y: (sy - cam.offsetY) / cam.scale }; }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function setConn(state, text) {
+      connText.textContent = text;
+      if (state === "ok") connDot.classList.add("ok");
+      else connDot.classList.remove("ok");
+    }
+
+    function setStats() {
+      stCount.textContent = model.stations.size;
+      segCount.textContent = model.segments.size;
+      trCount.textContent = model.routes.length;
+    }
+
+    function calcWorldBounds() {
+      const pts = [];
+      for (const s of model.stations.values()) pts.push(s.position);
+      if (!pts.length) return null;
+      let minX = pts[0].x, maxX = pts[0].x, minY = pts[0].y, maxY = pts[0].y;
+      for (const p of pts) {
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+      }
+      const pad = 1.0;
+      return { minX: minX - pad, maxX: maxX + pad, minY: minY - pad, maxY: maxY + pad };
+    }
+
+    function fitToScreen() {
+      const b = calcWorldBounds();
+      if (!b) return;
+      const w = window.innerWidth, h = window.innerHeight;
+
+      const worldW = (b.maxX - b.minX) * WORLD_UNIT_TO_PX;
+      const worldH = (b.maxY - b.minY) * WORLD_UNIT_TO_PX;
+      const scale = clamp(Math.min(w / worldW, h / worldH) * 0.92, cam.minScale, cam.maxScale);
+      cam.scale = scale;
+
+      const centerX = (b.minX + b.maxX) / 2;
+      const centerY = (b.minY + b.maxY) / 2;
+      cam.offsetX = w / 2 - (centerX * WORLD_UNIT_TO_PX) * cam.scale;
+      cam.offsetY = h / 2 - (centerY * WORLD_UNIT_TO_PX) * cam.scale;
+
+      requestRender();
+    }
+
+    function resetView() {
+      cam.scale = 1.0;
+      cam.offsetX = window.innerWidth * 0.15;
+      cam.offsetY = window.innerHeight * 0.55;
+      requestRender();
+    }
+
+    function requestRender() {
+      if (requestRender._raf) return;
+      requestRender._raf = requestAnimationFrame(() => {
+        requestRender._raf = 0;
+        render();
+      });
+    }
+
+    function drawGrid() {
+      const w = window.innerWidth, h = window.innerHeight;
+      const base = 80;
+      const spacing = clamp(base * cam.scale, 18, 120);
+
+      ctx.save();
+      ctx.fillStyle = "#0b1020";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+
+      const ox = (cam.offsetX % spacing + spacing) % spacing;
+      const oy = (cam.offsetY % spacing + spacing) % spacing;
+
+      ctx.beginPath();
+      for (let x = ox; x < w; x += spacing) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = oy; y < h; y += spacing) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+
+      const g = ctx.createRadialGradient(w * 0.5, h * 0.5, Math.min(w,h) * 0.2, w * 0.5, h * 0.5, Math.max(w,h) * 0.7);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(0,0,0,0.35)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    }
+
+    function stationScreenPos(station) {
+      const wx = station.position.x * WORLD_UNIT_TO_PX;
+      const wy = station.position.y * WORLD_UNIT_TO_PX;
+      return worldToScreen(wx, wy);
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function fmtPct(x) {
+      if (x === null || x === undefined || Number.isNaN(Number(x))) return "—";
+      return `${Number(x).toFixed(2)}%`;
+    }
+    function fmtNum(x) {
+      if (x === null || x === undefined || Number.isNaN(Number(x))) return "—";
+      const n = Number(x);
+      if (Math.abs(n) >= 1000) return n.toFixed(0);
+      if (Math.abs(n) >= 100) return n.toFixed(1);
+      return n.toFixed(2);
+    }
+
+    function trainLabel(t) {
+      const name = t?.name ?? "Поезд";
+      const speed = (typeof t?.speed === "number") ? `${fmtNum(t.speed)} км/ч` : "—";
+      return `${name} • ${speed}`;
+    }
+
+
+    function getTrainPosition(routeObj) {
+      const stage = routeObj?.stage;
+      const prog = clamp(Number(routeObj?.stage_progress ?? 0), 0, 100);
+
+      if (!stage) return null;
+
+      if (stage.type === "segment") {
+        const seg = model.segments.get(String(stage.id));
+        if (!seg) return null;
+        const a = model.stations.get(String(seg.from));
+        const b = model.stations.get(String(seg.to));
+        if (!a || !b) return null;
+
+        const pa = stationScreenPos(a);
+        const pb = stationScreenPos(b);
+
+        const t = prog / 100;
+        return {
+          x: pa.x + (pb.x - pa.x) * t,
+          y: pa.y + (pb.y - pa.y) * t,
+          stageType: "segment",
+          stageId: String(stage.id),
+          progress: prog
+        };
+      }
+
+      if (stage.type === "station") {
+        const st = model.stations.get(String(stage.id));
+        if (!st) return null;
+
+        // draw slightly offset from station to avoid overlap
+        const p = stationScreenPos(st);
+        return {
+          x: p.x + 22,
+          y: p.y - 22,
+          stageType: "station",
+          stageId: String(stage.id),
+          progress: prog
+        };
+      }
+
+      return null;
+    }
+
+    function render() {
+      drawGrid();
+
+      // segments
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      for (const seg of model.segments.values()) {
+        const a = model.stations.get(seg.from);
+        const b = model.stations.get(seg.to);
+        if (!a || !b) continue;
+
+        const pa = stationScreenPos(a);
+        const pb = stationScreenPos(b);
+
+        ctx.strokeStyle = "rgba(125, 211, 252, 0.18)";
+        ctx.lineWidth = 8;
+        ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+
+        ctx.strokeStyle = "rgba(255,255,255,0.16)";
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      }
+
+      // stations
+      for (const s of model.stations.values()) {
+        const p = stationScreenPos(s);
+        const isHover = hover.kind === "station" && hover.id === s.id;
+
+        ctx.beginPath();
+        ctx.fillStyle = isHover ? "rgba(167, 243, 208, 0.20)" : "rgba(255,255,255,0.10)";
+        ctx.arc(p.x, p.y, isHover ? 18 : 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle = isHover ? "rgba(167, 243, 208, 0.95)" : "rgba(255,255,255,0.85)";
+        ctx.arc(p.x, p.y, isHover ? 7 : 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // station name (only)
+        ctx.font = "13px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+        ctx.fillStyle = "rgba(255,255,255,0.88)";
+        ctx.fillText(s.name ?? "", p.x + 12, p.y - 10);
+
+        // persons count
+        const pc = (typeof s.persons_count === "number") ? s.persons_count : null;
+        if (pc !== null) {
+          ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+          ctx.fillStyle = pc > 200 ? "rgba(251, 191, 36, 0.95)" : "rgba(125, 211, 252, 0.85)";
+          ctx.fillText(String(pc), p.x + 12, p.y + 8);
+        }
+      }
+
+      // trains
+      for (const r of model.routes) {
+        const t = r?.train;
+        const trainId = t?.id ? String(t.id) : null;
+        if (!trainId) continue;
+
+        const pos = getTrainPosition(r);
+        if (!pos) continue;
+
+        const isHover = hover.kind === "train" && hover.id === trainId;
+
+        const wTrain = isHover ? 168 : 158;
+        const hTrain = isHover ? 26 : 24;
+        const x = pos.x - wTrain / 2;
+        const y = pos.y - hTrain / 2;
+
+        const padX = 12;
+        const padTop = 6;
+        const padBottom = 7;
+
+        // outer glow
+        ctx.fillStyle = isHover ? "rgba(251, 113, 133, 0.28)" : "rgba(251, 113, 133, 0.18)";
+        roundRect(ctx, x - 2, y - 2, wTrain + 4, hTrain + 4, 12);
+        ctx.fill();
+
+        // body
+        ctx.fillStyle = isHover ? "rgba(251, 113, 133, 0.95)" : "rgba(251, 113, 133, 0.82)";
+        roundRect(ctx, x, y, wTrain, hTrain, 11);
+        ctx.fill();
+        const pbx = x + padX;
+        const pby = y + hTrain - padBottom;
+        const pbw = wTrain - padX * 2;
+        const pbh = 5;
+
+        // progress bar background
+        // const pbx = x + 8, pby = y + hTrain - 7, pbw = wTrain - 16, pbh = 4;
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        roundRect(ctx, pbx, pby, pbw, pbh, 6);
+        ctx.fill();
+
+        // progress bar fill
+        const fillPct = clamp(Number(t?.filling_percentage ?? 0), 0, 100);
+        const pr = fillPct / 100;
+
+        ctx.fillStyle = "rgba(255,255,255,0.60)";
+        roundRect(ctx, pbx, pby, Math.max(3, pbw * pr), pbh, 6);
+        ctx.fill();
+
+        // label (name + speed)
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        const label = trainLabel(t);
+        ctx.fillText(label, x + 10, y + 14);
+
+        // // small percent at right
+        // ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+        // ctx.fillStyle = "rgba(255,255,255,0.80)";
+        // const pct = fmtPct(fillPct);
+        // const tw = ctx.measureText(pct).width;
+        // ctx.fillText(pct, x + wTrain - padX - tw, y + padTop + 12);
+
+      }
+
+      ctx.restore();
+
+      updateTooltip();
+    }
+
+    function hitTest() {
+      hover.kind = null;
+      hover.id = null;
+
+      let best = { kind: null, id: null, d: Infinity };
+
+      // stations
+      for (const s of model.stations.values()) {
+        const p = stationScreenPos(s);
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 18 && d < best.d) best = { kind: "station", id: s.id, d };
+      }
+
+      // trains (hit near current position)
+      for (const r of model.routes) {
+        const t = r?.train;
+        const trainId = t?.id ? String(t.id) : null;
+        if (!trainId) continue;
+
+        const pos = getTrainPosition(r);
+        if (!pos) continue;
+
+        const dx = mouse.x - pos.x;
+        const dy = mouse.y - pos.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 26 && d < best.d) best = { kind: "train", id: trainId, d };
+      }
+
+      hover.kind = best.kind;
+      hover.id = best.id;
+    }
+
+    function updateTooltip() {
+      if (!hover.kind) {
+        tip.classList.remove("show");
+        return;
+      }
+
+      tip.style.left = mouse.x + "px";
+      tip.style.top = mouse.y + "px";
+
+      if (hover.kind === "station") {
+        const s = model.stations.get(hover.id);
+        if (!s) return;
+        const pc = (typeof s.persons_count === "number") ? s.persons_count : "—";
+
+        tip.innerHTML = `
+          <div><strong>${escapeHtml(s.name ?? "Станция")}</strong></div>
+          <div class="grid">
+            <div class="k">Пассажиров</div><div class="v">${pc}</div>
+          </div>
+        `;
+      } else if (hover.kind === "train") {
+        const r = model.routes.find(x => String(x?.train?.id ?? "") === hover.id);
+        if (!r) return;
+
+        const t = r.train || {};
+        const stage = r.stage || {};
+        const prog = clamp(Number(r.stage_progress ?? 0), 0, 100);
+
+        tip.innerHTML = `
+          <div><strong>${escapeHtml(t.name ?? "Поезд")}</strong> <span class="muted">(${escapeHtml(t.type ?? "—")})</span></div>
+          <div class="grid">
+            <div class="k">Скорость</div><div class="v">${fmtNum(t.speed)} / ${fmtNum(t.max_speed)} км/ч</div>
+            <div class="k">Пассажиры</div><div class="v">${t.person_count ?? "—"} / ${t.capacity ?? "—"}</div>
+            <div class="k">Заполнение</div><div class="v">${fmtPct(t.filling_percentage)}</div>
+            <div class="k">Стадия</div><div class="v">${escapeHtml(stage.type ?? "—")}</div>
+            <div class="k">Прогресс этапа</div><div class="v">${fmtPct(prog)}</div>
+            <div class="k">Заполнение</div><div class="v">${fmtPct(t.filling_percentage)}</div>
+          </div>
+        `;
+      }
+
+      tip.classList.add("show");
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ====== WS ======
+    function connect() {
+      try { if (ws) ws.close(); } catch (_) {}
+      setConn("bad", "connecting…");
+
+      ws = new WebSocket(WS_URL);
+
+      ws.addEventListener("open", () => setConn("ok", "connected"));
+      ws.addEventListener("close", () => { setConn("bad", "disconnected"); scheduleReconnect(); });
+      ws.addEventListener("error", () => setConn("bad", "error"));
+
+      ws.addEventListener("message", (event) => {
+        let msg;
+        try { msg = JSON.parse(event.data); }
+        catch { return; }
+        handleMessage(msg);
+      });
+    }
+
+    let reconnectTimer = 0;
+    let reconnectDelay = 600;
+
+    function scheduleReconnect() {
+      if (reconnectTimer) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = 0;
+        reconnectDelay = clamp(reconnectDelay * 1.4, 600, 6000);
+        connect();
+      }, reconnectDelay);
+    }
+
+    function handleMessage(msg) {
+      if (!msg || typeof msg !== "object") return;
+
+      if (msg.type === "initial" && msg.payload) {
+        model.stations.clear();
+        for (const s of (msg.payload.stations || [])) {
+          model.stations.set(String(s.id), {
+            id: String(s.id),
+            name: s.name ?? "",
+            position: s.position ?? { x: 0, y: 0 },
+            persons_count: 0
+          });
+        }
+
+        model.segments.clear();
+        for (const seg of (msg.payload.segments || [])) {
+          model.segments.set(String(seg.id), { id: String(seg.id), from: String(seg.from), to: String(seg.to) });
+        }
+
+        setStats();
+        fitToScreen();
+        requestRender();
+        return;
+      }
+
+      if (msg.type === "update" && msg.payload) {
+        model.lastUpdateAt = Date.now();
+
+        for (const st of (msg.payload.stations || [])) {
+          const id = String(st.id);
+          const s = model.stations.get(id);
+          if (s && typeof st.persons_count === "number") s.persons_count = st.persons_count;
+        }
+
+        model.routes = Array.isArray(msg.payload.routes) ? msg.payload.routes : [];
+
+        setStats();
+        requestRender();
+        return;
+      }
+    }
+
+    // ====== INPUT ======
+    function onMouseMove(e) {
+      mouse.x = e.clientX; mouse.y = e.clientY;
+      const w = screenToWorld(mouse.x, mouse.y);
+      mouse.worldX = w.x; mouse.worldY = w.y;
+
+      if (isPanning) {
+        const dx = mouse.x - panLast.x;
+        const dy = mouse.y - panLast.y;
+        cam.offsetX += dx; cam.offsetY += dy;
+        panLast.x = mouse.x; panLast.y = mouse.y;
+        requestRender();
+        return;
+      }
+
+      hitTest();
+      requestRender();
+    }
+
+    function onMouseDown(e) {
+      if (e.button !== 0) return;
+      isPanning = true;
+      panLast.x = e.clientX; panLast.y = e.clientY;
+    }
+
+    function onMouseUp() { isPanning = false; }
+
+    function onWheel(e) {
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY);
+      const zoomFactor = Math.pow(1.12, delta);
+
+      const prevScale = cam.scale;
+      const nextScale = clamp(prevScale * zoomFactor, cam.minScale, cam.maxScale);
+
+      const sx = e.clientX, sy = e.clientY;
+      const before = screenToWorld(sx, sy);
+      cam.scale = nextScale;
+      const after = screenToWorld(sx, sy);
+
+      cam.offsetX += (after.x - before.x) * cam.scale;
+      cam.offsetY += (after.y - before.y) * cam.scale;
+
+      requestRender();
+    }
+
+    function onKeyDown(e) {
+      if (e.key === "f" || e.key === "F") fitToScreen();
+      if (e.key === "r" || e.key === "R") resetView();
+    }
+
+    // Touch pan + pinch
+    let touchState = { active: false, lastDist: 0 };
+
+    function dist(a, b) {
+      const dx = a.clientX - b.clientX;
+      const dy = a.clientY - b.clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    function onTouchStart(e) {
+      if (e.touches.length === 1) {
+        touchState.active = true;
+        isPanning = true;
+        panLast.x = e.touches[0].clientX;
+        panLast.y = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        touchState.active = true;
+        isPanning = false;
+        touchState.lastDist = dist(e.touches[0], e.touches[1]);
+      }
+    }
+
+    function onTouchMove(e) {
+      e.preventDefault();
+      if (!touchState.active) return;
+
+      if (e.touches.length === 1) {
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        const dx = x - panLast.x;
+        const dy = y - panLast.y;
+        cam.offsetX += dx; cam.offsetY += dy;
+        panLast.x = x; panLast.y = y;
+        requestRender();
+      } else if (e.touches.length === 2) {
+        const d = dist(e.touches[0], e.touches[1]);
+        if (touchState.lastDist > 0) {
+          const zoomFactor = d / touchState.lastDist;
+          const prevScale = cam.scale;
+          const nextScale = clamp(prevScale * zoomFactor, cam.minScale, cam.maxScale);
+
+          const sx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const sy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+          const before = screenToWorld(sx, sy);
+          cam.scale = nextScale;
+          const after = screenToWorld(sx, sy);
+
+          cam.offsetX += (after.x - before.x) * cam.scale;
+          cam.offsetY += (after.y - before.y) * cam.scale;
+
+          touchState.lastDist = d;
+          requestRender();
+        }
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (e.touches.length === 0) {
+        touchState.active = false;
+        isPanning = false;
+        touchState.lastDist = 0;
+      } else if (e.touches.length === 1) {
+        isPanning = true;
+        panLast.x = e.touches[0].clientX;
+        panLast.y = e.touches[0].clientY;
+        touchState.lastDist = 0;
+      }
+    }
+
+    // ====== INIT ======
+    window.addEventListener("resize", resize);
+    canvas.addEventListener("mousemove", onMouseMove);
+    canvas.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
+
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd);
+
+    document.getElementById("btnFit").addEventListener("click", fitToScreen);
+    document.getElementById("btnReset").addEventListener("click", resetView);
+    document.getElementById("btnReconnect").addEventListener("click", () => {
+      reconnectDelay = 600;
+      connect();
+    });
+
+    resize();
+    resetView();
+    connect();
+    requestRender();
+  </script>
+</body>
+</html>
