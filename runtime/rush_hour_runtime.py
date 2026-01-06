@@ -35,6 +35,10 @@ class RushHourRuntime:
             self._on_time_marker,
         )
 
+    @property
+    def is_rush(self) -> bool:
+        return self._is_rush
+
     def _on_time_marker(self, event: TimeMarkerReached) -> None:
         # время внутри суток
         day_time: int = int(event.sim_time) % self.DAY_SECONDS

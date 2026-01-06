@@ -118,6 +118,43 @@
     }
     .tooltip .k { color: rgba(255,255,255,0.65); }
     .tooltip .v { color: rgba(255,255,255,0.92); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.90);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
+    .badge.ok {
+      background: rgba(167, 243, 208, 0.14);
+      border-color: rgba(167, 243, 208, 0.22);
+      color: rgba(235, 255, 248, 0.92);
+    }
+    .badge.rush {
+      background: rgba(251, 191, 36, 0.16);
+      border-color: rgba(251, 191, 36, 0.28);
+      color: rgba(255, 247, 220, 0.95);
+    }
+    .timegrid {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 4px 10px;
+      align-items: baseline;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .timegrid .v {
+      color: rgba(255,255,255,0.88);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
   </style>
 </head>
 <body>
@@ -153,6 +190,12 @@
       <div class="row" style="margin-top: 8px;">
         <span class="muted">Hint:</span> наведите курсор на станцию/поезд.
       </div>
+      <div class="timegrid" aria-label="simulation-time">
+        <div>Sim time</div><div class="v" id="simTime">—</div>
+        <div>Abs time</div><div class="v" id="absTime">—</div>
+        <div>Status</div><div class="v"><span id="rushBadge" class="badge ok">Не час пик</span></div>
+      </div>
+
     </div>
   </div>
 
@@ -160,7 +203,8 @@
 
   <script>
     // ====== CONFIG ======
-    const WS_URL = "ws://ademaxhub.ru:8765"; // поменяйте при необходимости
+    // const WS_URL = "ws://localhost:8765"; // for local dev
+    const WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/";
     const WORLD_UNIT_TO_PX = 80;
 
     // ====== STATE ======
@@ -173,6 +217,12 @@
     const segCount = document.getElementById("segCount");
     const trCount = document.getElementById("trCount");
 
+
+    const simTimeEl = document.getElementById("simTime");
+    const absTimeEl = document.getElementById("absTime");
+    const rushBadgeEl = document.getElementById("rushBadge");
+
+
     const tip = document.getElementById("tip");
     let ws = null;
 
@@ -180,7 +230,9 @@
       stations: new Map(), // id -> {id,name,position:{x,y}, persons_count}
       segments: new Map(), // id -> {id, from, to}
       routes: [],          // array of {train:{...}, stage:{id,type}, stage_progress}
-      lastUpdateAt: 0
+      lastUpdateAt: 0,
+      time: null,
+      is_rush: false
     };
 
     const cam = { scale: 1.0, offsetX: 0, offsetY: 0, minScale: 0.1, maxScale: 8.0 };
@@ -319,6 +371,36 @@
       if (Math.abs(n) >= 100) return n.toFixed(1);
       return n.toFixed(2);
     }
+
+
+
+    function pad2(n) { return String(Math.trunc(n)).padStart(2, "0"); }
+
+    function fmtHMS(t) {
+      if (!t) return "—";
+      return `${pad2(t.h)}:${pad2(t.m)}:${pad2(t.s)}`;
+    }
+
+    function fmtAbsHMS(t) {
+      if (!t) return "—";
+      const absH = Number(t.abs_h ?? 0);
+      const day = Math.floor(absH / 24);
+      const hh = absH % 24;
+      return `Day ${day + 1} ${pad2(hh)}:${pad2(t.abs_m)}:${pad2(t.abs_s)}`;
+    }
+
+    function updateTimeHUD() {
+      if (!simTimeEl || !absTimeEl || !rushBadgeEl) return;
+
+      simTimeEl.textContent = fmtHMS(model.time);
+      absTimeEl.textContent = fmtAbsHMS(model.time);
+
+      const rush = !!model.is_rush;
+      rushBadgeEl.textContent = rush ? "Час пик" : "Не час пик";
+      rushBadgeEl.classList.toggle("rush", rush);
+      rushBadgeEl.classList.toggle("ok", !rush);
+    }
+
 
     function trainLabel(t) {
       const name = t?.name ?? "Поезд";
@@ -615,6 +697,9 @@
       if (!msg || typeof msg !== "object") return;
 
       if (msg.type === "initial" && msg.payload) {
+        model.time = null;
+        model.is_rush = false;
+        updateTimeHUD();
         model.stations.clear();
         for (const s of (msg.payload.stations || [])) {
           model.stations.set(String(s.id), {
@@ -638,6 +723,11 @@
 
       if (msg.type === "update" && msg.payload) {
         model.lastUpdateAt = Date.now();
+
+        model.time = msg.payload.time || null;
+        model.is_rush = !!msg.payload.is_rush;
+        updateTimeHUD();
+
 
         for (const st of (msg.payload.stations || [])) {
           const id = String(st.id);

@@ -27,7 +27,7 @@ s6 = Station(StationConfig(ID(6), "Рабочий посёлок", 200, Pos(10.3
 s7 = Station(StationConfig(ID(7), "Кунцевская", 200, Pos(12.30, 0)))
 s8 = Station(StationConfig(ID(8), "Славянский бульвар", 200, Pos(13.70, 0)))
 s9 = Station(StationConfig(ID(9), "Фили", 200, Pos(16.30, 0)))
-s10 = Station(StationConfig(ID(10), "Тестовская (Москва-Сити)", 200, Pos(18.30, 0)))
+s10 = Station(StationConfig(ID(10), "Тестовская", 200, Pos(18.30, 0)))
 s11 = Station(StationConfig(ID(11), "Беговая", 200, Pos(20.30, 0)))
 s12 = Station(StationConfig(ID(12), "Белорусский вокзал", 200, Pos(22.30, 0)))
 
@@ -161,7 +161,7 @@ route = Route([
 ])
 
 # ---------- Simulation ----------
-sim = Simulation(render_interval=1, start_time=6.6 * 60 * 60)
+sim = Simulation(render_interval=1 / 30, start_time=6.6 * 60 * 60)
 em: EventManager = sim.get_event_manager()
 
 # ---------- Server (parallel) ----------
@@ -174,20 +174,21 @@ server_thread = threading.Thread(target=server.run, name="server-thread", daemon
 server_thread.start()
 
 # пассажиропотоки (чел / сек)
-sim.add_station(s1, PassengersGenerator(base_rate=0.6, variation=0.9, rush_multiplier=5))
-sim.add_station(s2, PassengersGenerator(base_rate=0.2, variation=0.2))
-sim.add_station(s3, PassengersGenerator(base_rate=0.6, variation=0.7, rush_multiplier=5))
-sim.add_station(s4, PassengersGenerator(base_rate=0.2, variation=0.5))
-sim.add_station(s6, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s7, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s8, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s9, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s10, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s11, PassengersGenerator(base_rate=0.4, variation=0.5))
-sim.add_station(s12, PassengersGenerator(base_rate=0.4, variation=0.5))
+sim.add_station(s1, PassengersGenerator(base_rate=0.28, variation=0.4, rush_multiplier=5), unload_max=0.0) # Одинцово
+sim.add_station(s2, PassengersGenerator(base_rate=0.15, variation=0.4, rush_multiplier=3), unload_max=0.02) # Баковка
+sim.add_station(s3, PassengersGenerator(base_rate=0.267, variation=0.4, rush_multiplier=5), unload_max=0.05) # Сколково
+sim.add_station(s4, PassengersGenerator(base_rate=0.1, variation=0.4, rush_multiplier=3), unload_max=0.01) # Немчиновка
+sim.add_station(s5, PassengersGenerator(base_rate=0.17, variation=0.4, rush_multiplier=3), unload_min=0.02, unload_max=0.1) # Сетунь
+sim.add_station(s6, PassengersGenerator(base_rate=0.19, variation=0.4, rush_multiplier=2), unload_min=0.03, unload_max=0.1) # Рабочий Поселок
+sim.add_station(s7, PassengersGenerator(base_rate=0.1, variation=0.4, rush_multiplier=1.1), unload_min=0.4, unload_max=0.6) # Кунцевская
+sim.add_station(s8, PassengersGenerator(base_rate=0.1, variation=0.4, rush_multiplier=1.2), unload_min=0.4, unload_max=0.8) # Славянский Бульвар
+sim.add_station(s9, PassengersGenerator(base_rate=0.1, variation=0.4, rush_multiplier=1.1), unload_min=0.1, unload_max=0.2) # Фили
+sim.add_station(s10, PassengersGenerator(base_rate=0.05, variation=0.4, rush_multiplier=1), unload_min=0.1, unload_max=0.3) # Тестовская
+sim.add_station(s11, PassengersGenerator(base_rate=0.05, variation=0.4, rush_multiplier=1), unload_min=0.3, unload_max=0.6) #Беговая
+sim.add_station(s12, PassengersGenerator(base_rate=0.1, variation=0.4, rush_multiplier=1.3), unload_min=0.7, unload_max=0.9) #Белорусский
 
 # маршруты
-sim.add_train_generator(route, [ivolga, ed4m], 240)
+sim.add_train_generator(route, [ivolga, ed4m], 300)
 
 # старт
-sim.run(sim_seconds_per_real_second=5, render=False)
+sim.run(sim_seconds_per_real_second=10, render=False)

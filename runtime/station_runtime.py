@@ -21,12 +21,11 @@ class StationRuntime:
 
     BOARDING_VARIATION: float = 0.25
 
-    UNLOAD_PERCENT_MIN: float = 0.05
-    UNLOAD_PERCENT_MAX: float = 0.3
+
 
     # -------- инициализация --------
 
-    def __init__(self, station: Station, generator: PassengersGenerator, event_manager: EventManager):
+    def __init__(self, station: Station, generator: PassengersGenerator, event_manager: EventManager, unload_min: float = 0.0, unload_max: float = 0.3):
         self.station = station
         self.generator = generator
         self.event_manager = event_manager
@@ -34,6 +33,9 @@ class StationRuntime:
         # train -> accumulator
         self._unloading_trains: Dict[Train, float] = {}
         self._boarding_trains: Dict[Train, float] = {}
+
+        self._unload_min: float = unload_min
+        self._unload_max: float = unload_max
 
         # сколько ещё нужно высадить
         self._unload_targets: Dict[Train, int] = {}
@@ -57,9 +59,11 @@ class StationRuntime:
         train = event.train
 
         percent = random.uniform(
-            self.UNLOAD_PERCENT_MIN,
-            self.UNLOAD_PERCENT_MAX,
+            self._unload_min,
+            self._unload_max,
         )
+
+        print(f"{self.station.name} {percent}")
 
         to_unload = int(train.person_count * percent)
 

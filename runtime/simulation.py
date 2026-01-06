@@ -24,9 +24,10 @@ from models.events.simulation_data_event import SimulationDataUpdate
 class Simulation:
 
     def __init__(self, render_interval: float = 0.1, start_time: float = 0):
-        # статистика
+
 
         # симуляционное время (секунды)
+        self.start_time: float = start_time
         self.sim_time: float = start_time
 
         # интервал обновления вывода (реальные секунды)
@@ -77,12 +78,16 @@ class Simulation:
         self,
         station: Station,
         generator: PassengersGenerator,
+        unload_min: float = 0.0,
+        unload_max: float = 0.3,
     ) -> None:
         self._station_runtimes.append(
             StationRuntime(
                 station=station,
                 generator=generator,
                 event_manager=self.event_manager,
+                unload_min=unload_min,
+                unload_max=unload_max,
             )
         )
 
@@ -99,15 +104,25 @@ class Simulation:
     # ---------- запуск симуляции ----------
 
     def run(self, sim_seconds_per_real_second: float = 1.0, render: bool = True) -> None:
-        last_tick: float = time.time()
+        last_tick: float = time.perf_counter()
         last_render: float = last_tick
         last_save_stats: float = self.sim_time
 
+        # Минимальный интервал для предотвращения зацикливания
+        min_dt_real = 0.001  # 1 мс
+
         while True:
-            now: float = time.time()
+            now: float = time.perf_counter()
 
             # реальное прошедшее время
             dt_real: float = now - last_tick
+
+            # Если dt_real слишком мал, делаем небольшую паузу
+            if dt_real < min_dt_real:
+                time.sleep(min_dt_real - dt_real)
+                now = time.perf_counter()
+                dt_real = now - last_tick
+
             last_tick = now
 
             # симуляционное время
@@ -138,12 +153,12 @@ class Simulation:
                 last_save_stats = self.sim_time
 
             # --- вывод ---
-
             if now - last_render >= self.render_interval:
                 if render:
                     self.render()
 
-                sim_data = SimData()
+                sim_data = SimData(sim_time=self.sim_time)
+                sim_data.set_rush_status(self._rush_hour_runtime.is_rush)
 
                 for rr in list(self._route_runtimes):
                     sim_data.add_route_data(rr)
@@ -152,7 +167,6 @@ class Simulation:
                     sim_data.add_station_data(sr)
 
                 self.event_manager.emit(SimulationDataUpdate(sim_data))
-
                 last_render = now
 
 

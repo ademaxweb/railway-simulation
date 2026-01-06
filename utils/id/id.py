@@ -16,6 +16,9 @@ class ID:
     def __str__(self):
         return str(self.__v)
 
+    def __int__(self):
+        return self.__v
+
     def __eq__(self, other):
         return self.__v == other.__v
 
