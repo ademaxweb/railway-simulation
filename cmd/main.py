@@ -175,7 +175,7 @@ route = Route([
 ])
 
 # ---------- Simulation ----------
-sim = Simulation(render_interval=1 / 30, start_time=3 * 60 * 60)
+sim = Simulation(render_interval=1 / 30, start_time=6 * 60 * 60)
 em: EventManager = sim.get_event_manager()
 
 # ---------- Server (parallel) ----------
@@ -428,4 +428,4 @@ sim.add_train_scheduled_generator(TrainsSchedule(
     ]
 ))
 # старт
-sim.run(sim_seconds_per_real_second=60 * 30, render=False)
+sim.run(sim_seconds_per_real_second=1 * 30, render=False)
