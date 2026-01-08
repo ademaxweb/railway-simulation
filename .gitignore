@@ -1,5 +1,5 @@
 .idea
 .venv
 __pycache__
-./stats/trains.json
-./stats/plots
+stats/trains.json
+stats/plots
