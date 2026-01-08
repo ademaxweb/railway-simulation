@@ -158,9 +158,9 @@ class Simulation:
                 for stg in self._train_scheduled_generators:
                     stg.advance(sim_time=self.sim_time)
 
-                if self.sim_time - last_save_stats >= 2 * 60:
+                if self.sim_time - last_save_stats >= 5 * 60:
                     self.collect_statistics()
-                    # self.event_manager.emit(SaveStatistics(SimDate(self.sim_time)))
+                    self.event_manager.emit(SaveStatistics(SimDate(self.sim_time)))
                     last_save_stats = self.sim_time
 
             # --- вывод ---

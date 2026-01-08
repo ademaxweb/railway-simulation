@@ -33,15 +33,71 @@ class PassengersGenerator:
         self._rush_factor = 1.0
 
     # --- основная логика ---
+    # def rate_at_time(self, sim_time: float) -> float:
+    #     day_time = sim_time % self.DAY_SECONDS
+    #
+    #     # базовая суточная волна: ночь → min, день → max
+    #     sinus = math.sin(
+    #         2 * math.pi * (day_time - 6 * 3600) / self.DAY_SECONDS
+    #     )
+    #
+    #     rate = self.base_rate * (1.0 + self.amplitude * sinus)
+    #     rate *= self._rush_factor
+    #     rate *= 1.0 + self._random.uniform(-self.variation, self.variation)
+    #
+    #     return max(0.0, rate)
+
     def rate_at_time(self, sim_time: float) -> float:
         day_time = sim_time % self.DAY_SECONDS
+        hour = day_time / 3600
+        minute = (day_time % 3600) / 60
 
-        # базовая суточная волна: ночь → min, день → max
-        sinus = math.sin(
-            2 * math.pi * (day_time - 6 * 3600) / self.DAY_SECONDS
-        )
+        hour_norm = hour if hour >= 2 else hour + 24
 
-        rate = self.base_rate * (1.0 + self.amplitude * sinus)
+        # Коэффициенты для разных периодов (на основе статистики метро)
+        if 2.0 <= hour_norm < 4.0:  # Ночь: 2:00-4:00
+            coefficient = 0.005 + 0.01 * ((hour_norm - 2.0) / 2.0)  # 5% → 15%
+
+        elif 4.0 <= hour_norm < 6.0:  # Раннее утро: 4:00-6:00
+            t = (hour_norm - 4.0) / 2.0
+            coefficient = 0.15 + 0.30 * t  # 15% → 45%
+
+        elif 6.0 <= hour_norm < 8.5:  # Утренний пик: 6:00-8:30
+            if hour_norm < 7.5:  # До 7:30 - быстрый рост
+                t = (hour_norm - 6.0) / 1.5
+                coefficient = 0.45 + 0.45 * math.sin(t * math.pi / 2)  # 45% → 90%
+            else:  # 7:30-8:30 - вершина пика
+                t = (hour_norm - 7.5) / 1.0
+                coefficient = 0.90 + 0.10 * (1 - math.cos(t * math.pi)) / 2  # 90% → 100% → 90%
+
+        elif 8.5 <= hour_norm < 10.0:  # После пика: 8:30-10:00
+            t = (hour_norm - 8.5) / 1.5
+            coefficient = 0.90 - 0.25 * t  # 90% → 65%
+
+        elif 10.0 <= hour_norm < 17.0:  # День: 10:00-17:00
+            t = (hour_norm - 10.0) / 7.0
+            coefficient = 0.65 - 0.15 * t  # 65% → 50%
+
+        elif 17.0 <= hour_norm < 20.0:  # Вечерний подъем: 17:00-20:00
+            if hour_norm < 18.5:  # Рост до 18:30
+                t = (hour_norm - 17.0) / 1.5
+                coefficient = 0.50 + 0.25 * math.sin(t * math.pi / 2)  # 50% → 75%
+            else:  # 18:30-20:00
+                t = (hour_norm - 18.5) / 1.5
+                coefficient = 0.75 - 0.20 * t  # 75% → 55%
+
+        elif 20.0 <= hour_norm < 24.0:  # Вечер: 20:00-0:00
+            t = (hour_norm - 20.0) / 4.0
+            coefficient = 0.55 - 0.40 * t  # 55% → 15%
+
+        elif 24.0 <= hour_norm <= 26.0:  # Ночь: 0:00-2:00
+            t = (hour_norm - 24.0) / 2.0
+            coefficient = 0.15 - 0.10 * t  # 15% → 5%
+
+        else:
+            coefficient = 0.05
+
+        rate = self.base_rate * coefficient
         rate *= self._rush_factor
         rate *= 1.0 + self._random.uniform(-self.variation, self.variation)
 

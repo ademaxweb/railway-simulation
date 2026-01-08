@@ -42,6 +42,7 @@ class TrainScheduleEntry:
     train_config: TrainConfig
     departure_time: ScheduleTime  # Время отправления с первой станции
     is_departed: bool = False
+    not_clear: bool = False
 
 class TrainsSchedule:
     """Полное расписание на день"""
@@ -101,6 +102,8 @@ class ScheduledTrainGenerator:
     def _dispatch_train(self, entry: TrainScheduleEntry) -> None:
         """Отправляет поезд по расписанию"""
         train = create_train(entry.train_config)
+        if entry.not_clear:
+            train.add_person(random.randint(100, 400))
         self._event_manager.emit(TrainGenerated(train, entry.route))
 
     def _on_new_day(self, e: NewDayMarker):
