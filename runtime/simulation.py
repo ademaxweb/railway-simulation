@@ -9,7 +9,7 @@ from runtime.event_manager import EventManager
 from runtime.statistics_runtime import StatisticsRuntime
 from runtime.time_mode_runtime import TimeModeRuntime
 from runtime.rush_hour_runtime import RushHourRuntime
-from runtime.train_generator import TrainGenerator, TrainGeneratorConfig
+from runtime.train_generator import TrainGenerator, TrainGeneratorConfig, TrainsSchedule, ScheduledTrainGenerator
 from runtime.simulation_date_time import SimDate
 
 from models.routes.route import Route
@@ -40,6 +40,7 @@ class Simulation:
         self._route_runtimes: List[RouteRuntime] = []
         self._station_runtimes: List[StationRuntime] = []
         self._train_generators: List[TrainGenerator] = []
+        self._train_scheduled_generators: List[ScheduledTrainGenerator] = []
         self._statistics_runtime = StatisticsRuntime(self.event_manager)
 
 
@@ -101,6 +102,11 @@ class Simulation:
             ))
         )
 
+    def add_train_scheduled_generator(self, schedule: TrainsSchedule) -> None:
+        self._train_scheduled_generators.append(
+            ScheduledTrainGenerator(schedule=schedule, event_manager=self.event_manager)
+        )
+
     # ---------- запуск симуляции ----------
 
     def run(self, sim_seconds_per_real_second: float = 1.0, render: bool = True) -> None:
@@ -108,16 +114,15 @@ class Simulation:
         last_render: float = last_tick
         last_save_stats: float = self.sim_time
 
-        # Минимальный интервал для предотвращения зацикливания
-        min_dt_real = 0.001  # 1 мс
+        # МАКСИМАЛЬНЫЙ допустимый шаг симуляции
+        max_dt_sim: float = 0.5  # не больше 0.5 секунд за раз
+
+        min_dt_real = 0.001
 
         while True:
             now: float = time.perf_counter()
-
-            # реальное прошедшее время
             dt_real: float = now - last_tick
 
-            # Если dt_real слишком мал, делаем небольшую паузу
             if dt_real < min_dt_real:
                 time.sleep(min_dt_real - dt_real)
                 now = time.perf_counter()
@@ -125,32 +130,38 @@ class Simulation:
 
             last_tick = now
 
-            # симуляционное время
-            dt_sim: float = dt_real * sim_seconds_per_real_second
-            self.sim_time += dt_sim
+            # Сколько симуляционного времени должно пройти
+            target_sim_dt: float = dt_real * sim_seconds_per_real_second
 
-            # --- интерпретация времени (час-пик, маркеры) ---
-            self._time_mode_runtime.advance(self.sim_time)
+            # Разбиваем на куски не больше max_dt_sim
+            remaining_sim_dt = target_sim_dt
+            while remaining_sim_dt > 0:
+                step_dt = min(max_dt_sim, remaining_sim_dt)
 
-            # --- обновление маршрутов ---
-            for runtime in list(self._route_runtimes):
-                runtime.advance(dt_sim)
-                if runtime.finished:
-                    self._route_runtimes.remove(runtime)
+                self.sim_time += step_dt
+                remaining_sim_dt -= step_dt
 
-            # --- обновление станций ---
-            for sr in self._station_runtimes:
-                sr.advance(dt_sim, self.sim_time)
+                # --- обновление всех систем с малым шагом ---
+                self._time_mode_runtime.advance(self.sim_time)
 
-            # --- генерация поездов ---
-            for tg in self._train_generators:
-                tg.advance(dt_sim)
+                for runtime in list(self._route_runtimes):
+                    runtime.advance(step_dt)
+                    if runtime.finished:
+                        self._route_runtimes.remove(runtime)
 
-            # --- сбор статистики ----
-            if self.sim_time - last_save_stats >= 2 * 60:
-                self.collect_statistics()
-                self.event_manager.emit(SaveStatistics(SimDate(self.sim_time)))
-                last_save_stats = self.sim_time
+                for sr in self._station_runtimes:
+                    sr.advance(step_dt, self.sim_time)
+
+                for tg in self._train_generators:
+                    tg.advance(step_dt)
+
+                for stg in self._train_scheduled_generators:
+                    stg.advance(sim_time=self.sim_time)
+
+                if self.sim_time - last_save_stats >= 2 * 60:
+                    self.collect_statistics()
+                    # self.event_manager.emit(SaveStatistics(SimDate(self.sim_time)))
+                    last_save_stats = self.sim_time
 
             # --- вывод ---
             if now - last_render >= self.render_interval:
@@ -168,7 +179,6 @@ class Simulation:
 
                 self.event_manager.emit(SimulationDataUpdate(sim_data))
                 last_render = now
-
 
 
 

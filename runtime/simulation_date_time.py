@@ -13,6 +13,13 @@ class SimDate:
         self.m = day_time % 3600 // 60
         self.s = day_time % 60
 
+    @classmethod
+    def from_hms(cls, h: int = 0, m: int = 0, s: int = 0) -> 'SimDate':
+        return cls(h * 60 * 60 + m * 60 + s)
+
+    def is_day_time(self, time: 'SimDate') -> bool:
+        return self.h == time.h and self.m == time.m and self.s == time.s
+
     def __str__(self):
         return f"{self.h:02d}:{self.m:02d}:{self.s:02d}"
 

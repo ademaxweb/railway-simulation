@@ -15,6 +15,9 @@ class RushHourEnded(Event):
 
 # ---------- информационные события ----------
 
+class NewDayMarker(Event):
+    pass
+
 class TimeMarkerReached(Event):
     def __init__(self, sim_time: float):
         self.sim_time = sim_time

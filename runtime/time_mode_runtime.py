@@ -1,5 +1,4 @@
-from models.events.time_events import TimeMarkerReached
-
+from models.events.time_events import TimeMarkerReached, NewDayMarker
 
 class TimeModeRuntime:
     DAY_SECONDS = 24 * 3600
@@ -22,6 +21,9 @@ class TimeModeRuntime:
         if day_time < self._last_day_time:
             self.event_manager.emit(
                 TimeMarkerReached(0.0)
+            )
+            self.event_manager.emit(
+                NewDayMarker()
             )
             self._next_info_mark = self._info_interval
 

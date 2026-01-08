@@ -63,7 +63,7 @@ class StationRuntime:
             self._unload_max,
         )
 
-        print(f"{self.station.name} {percent}")
+        # print(f"{self.station.name} {percent}")
 
         to_unload = int(train.person_count * percent)
 
