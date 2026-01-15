@@ -104,7 +104,7 @@
       backdrop-filter: blur(8px);
       opacity: 0;
       transition: opacity 0.10s ease;
-      max-width: 320px;
+      max-width: 420px;
       line-height: 1.25;
     }
     .tooltip.show { opacity: 1; }
@@ -118,6 +118,51 @@
     }
     .tooltip .k { color: rgba(255,255,255,0.65); }
     .tooltip .v { color: rgba(255,255,255,0.92); }
+
+    .tooltip .sectionTitle {
+      margin-top: 10px;
+      font-weight: 650;
+      color: rgba(255,255,255,0.88);
+    }
+    .tooltip .trainCard {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .tooltip .trainTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+    }
+    .tooltip .trainName {
+      font-weight: 650;
+      color: rgba(255,255,255,0.92);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+    }
+    .tooltip .trainId {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: rgba(255,255,255,0.72);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .tooltip .flags {
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 4px 10px;
+      align-items: baseline;
+      font-size: 12px;
+    }
+    .tooltip .flagK { color: rgba(255,255,255,0.65); }
+    .tooltip .flagV { color: rgba(255,255,255,0.92); }
+    .tooltip .flagV.true { color: rgba(167, 243, 208, 0.92); }
+    .tooltip .flagV.false { color: rgba(251, 191, 36, 0.92); }
 
     .badge {
       display: inline-flex;
@@ -154,7 +199,6 @@
       color: rgba(255,255,255,0.88);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-
   </style>
 </head>
 <body>
@@ -195,7 +239,6 @@
         <div>Abs time</div><div class="v" id="absTime">—</div>
         <div>Status</div><div class="v"><span id="rushBadge" class="badge ok">Не час пик</span></div>
       </div>
-
     </div>
   </div>
 
@@ -203,8 +246,8 @@
 
   <script>
     // ====== CONFIG ======
-    const WS_URL = "ws://localhost:8765"; // for local dev
-    // const WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/";
+    // const WS_URL = "ws://localhost:8765"; // for local dev
+    const WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/";
     const WORLD_UNIT_TO_PX = 80;
 
     // ====== STATE ======
@@ -217,17 +260,15 @@
     const segCount = document.getElementById("segCount");
     const trCount = document.getElementById("trCount");
 
-
     const simTimeEl = document.getElementById("simTime");
     const absTimeEl = document.getElementById("absTime");
     const rushBadgeEl = document.getElementById("rushBadge");
-
 
     const tip = document.getElementById("tip");
     let ws = null;
 
     const model = {
-      stations: new Map(), // id -> {id,name,position:{x,y}, persons_count}
+      stations: new Map(), // id -> {id,name,position:{x,y}, persons_count, trains:{}}
       segments: new Map(), // id -> {id, from, to}
       routes: [],          // array of {train:{...}, stage:{id,type}, stage_progress}
       lastUpdateAt: 0,
@@ -372,8 +413,6 @@
       return n.toFixed(2);
     }
 
-
-
     function pad2(n) { return String(Math.trunc(n)).padStart(2, "0"); }
 
     function fmtHMS(t) {
@@ -401,13 +440,11 @@
       rushBadgeEl.classList.toggle("ok", !rush);
     }
 
-
     function trainLabel(t) {
       const name = t?.name ?? "Поезд";
       const speed = (typeof t?.speed === "number") ? `${fmtNum(t.speed)} км/ч` : "—";
       return `${name} • ${speed}`;
     }
-
 
     function getTrainPosition(routeObj) {
       const stage = routeObj?.stage;
@@ -439,7 +476,6 @@
         const st = model.stations.get(String(stage.id));
         if (!st) return null;
 
-        // draw slightly offset from station to avoid overlap
         const p = stationScreenPos(st);
         return {
           x: p.x + 22,
@@ -493,7 +529,7 @@
         ctx.arc(p.x, p.y, isHover ? 7 : 6, 0, Math.PI * 2);
         ctx.fill();
 
-        // station name (only)
+        // station name
         ctx.font = "13px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
         ctx.fillStyle = "rgba(255,255,255,0.88)";
         ctx.fillText(s.name ?? "", p.x + 12, p.y - 10);
@@ -504,6 +540,15 @@
           ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
           ctx.fillStyle = pc > 200 ? "rgba(251, 191, 36, 0.95)" : "rgba(125, 211, 252, 0.85)";
           ctx.fillText(String(pc), p.x + 12, p.y + 8);
+        }
+
+        // trains count (optional small hint)
+        const trainsObj = s.trains || {};
+        const trainIds = Object.keys(trainsObj);
+        if (trainIds.length > 0) {
+          ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+          ctx.fillStyle = "rgba(255,255,255,0.70)";
+          ctx.fillText(`🚆${trainIds.length}`, p.x - 10, p.y - 18);
         }
       }
 
@@ -524,7 +569,6 @@
         const y = pos.y - hTrain / 2;
 
         const padX = 12;
-        const padTop = 6;
         const padBottom = 7;
 
         // outer glow
@@ -536,18 +580,18 @@
         ctx.fillStyle = isHover ? "rgba(251, 113, 133, 0.95)" : "rgba(251, 113, 133, 0.82)";
         roundRect(ctx, x, y, wTrain, hTrain, 11);
         ctx.fill();
+
         const pbx = x + padX;
         const pby = y + hTrain - padBottom;
         const pbw = wTrain - padX * 2;
         const pbh = 5;
 
         // progress bar background
-        // const pbx = x + 8, pby = y + hTrain - 7, pbw = wTrain - 16, pbh = 4;
         ctx.fillStyle = "rgba(0,0,0,0.25)";
         roundRect(ctx, pbx, pby, pbw, pbh, 6);
         ctx.fill();
 
-        // progress bar fill
+        // progress bar fill (train filling)
         const fillPct = clamp(Number(t?.filling_percentage ?? 0), 0, 100);
         const pr = fillPct / 100;
 
@@ -560,14 +604,6 @@
         ctx.fillStyle = "rgba(255,255,255,0.92)";
         const label = trainLabel(t);
         ctx.fillText(label, x + 10, y + 14);
-
-        // // small percent at right
-        // ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
-        // ctx.fillStyle = "rgba(255,255,255,0.80)";
-        // const pct = fmtPct(fillPct);
-        // const tw = ctx.measureText(pct).width;
-        // ctx.fillText(pct, x + wTrain - padX - tw, y + padTop + 12);
-
       }
 
       ctx.restore();
@@ -590,7 +626,7 @@
         if (d < 18 && d < best.d) best = { kind: "station", id: s.id, d };
       }
 
-      // trains (hit near current position)
+      // trains
       for (const r of model.routes) {
         const t = r?.train;
         const trainId = t?.id ? String(t.id) : null;
@@ -609,6 +645,53 @@
       hover.id = best.id;
     }
 
+    function boolBadge(v) {
+      const b = !!v;
+      const cls = b ? "true" : "false";
+      return `<span class="flagV ${cls}">${b ? "true" : "false"}</span>`;
+    }
+
+    function getTrainInfoById(trainId) {
+      const idStr = String(trainId);
+      const r = model.routes.find(x => String(x?.train?.id ?? "") === idStr);
+      if (!r) return null;
+      return r.train || null;
+    }
+
+    function stationTrainsHtml(stationObj) {
+      const trainsObj = stationObj?.trains || {};
+      const ids = Object.keys(trainsObj);
+      if (!ids.length) return "";
+
+      let html = `<div class="sectionTitle">Поезда на станции</div>`;
+
+      for (const tid of ids) {
+        const st = trainsObj[tid] || {};
+        const tInfo = getTrainInfoById(tid);
+
+        const trainName = tInfo?.name ? String(tInfo.name) : "Поезд";
+        const trainType = tInfo?.type ? String(tInfo.type) : "—";
+
+        html += `
+          <div class="trainCard">
+            <div class="trainTop">
+              <div class="trainName">${escapeHtml(trainName)} <span class="muted">(${escapeHtml(trainType)})</span></div>
+              <div class="trainId">#${escapeHtml(String(tid))}</div>
+            </div>
+            <div class="flags">
+              <div class="flagK">is_waiting_finished</div><div class="flagV">${boolBadge(st.is_waiting_finished)}</div>
+              <div class="flagK">is_boarding_finished</div><div class="flagV">${boolBadge(st.is_boarding_finished)}</div>
+              <div class="flagK">is_unloading_finished</div><div class="flagV">${boolBadge(st.is_unloading_finished)}</div>
+              <div class="flagK">is_finished</div><div class="flagV">${boolBadge(st.is_finished)}</div>
+              <div class="flagK">is_finished</div><div class="flagV">${st.total_delay}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return html;
+    }
+
     function updateTooltip() {
       if (!hover.kind) {
         tip.classList.remove("show");
@@ -621,6 +704,7 @@
       if (hover.kind === "station") {
         const s = model.stations.get(hover.id);
         if (!s) return;
+
         const pc = (typeof s.persons_count === "number") ? s.persons_count : "—";
 
         tip.innerHTML = `
@@ -628,6 +712,7 @@
           <div class="grid">
             <div class="k">Пассажиров</div><div class="v">${pc}</div>
           </div>
+          ${stationTrainsHtml(s)}
         `;
       } else if (hover.kind === "train") {
         const r = model.routes.find(x => String(x?.train?.id ?? "") === hover.id);
@@ -636,6 +721,7 @@
         const t = r.train || {};
         const stage = r.stage || {};
         const prog = clamp(Number(r.stage_progress ?? 0), 0, 100);
+        const total_delay = r.delay
 
         tip.innerHTML = `
           <div><strong>${escapeHtml(t.name ?? "Поезд")}</strong> <span class="muted">(${escapeHtml(t.type ?? "—")})</span></div>
@@ -645,7 +731,7 @@
             <div class="k">Заполнение</div><div class="v">${fmtPct(t.filling_percentage)}</div>
             <div class="k">Стадия</div><div class="v">${escapeHtml(stage.type ?? "—")}</div>
             <div class="k">Прогресс этапа</div><div class="v">${fmtPct(prog)}</div>
-            <div class="k">Заполнение</div><div class="v">${fmtPct(t.filling_percentage)}</div>
+            <div class="k">Общая задержка</div><div class="v">${fmtNum(total_delay)}</div>
           </div>
         `;
       }
@@ -701,12 +787,14 @@
         model.is_rush = false;
         updateTimeHUD();
         model.stations.clear();
+
         for (const s of (msg.payload.stations || [])) {
           model.stations.set(String(s.id), {
             id: String(s.id),
             name: s.name ?? "",
             position: s.position ?? { x: 0, y: 0 },
-            persons_count: 0
+            persons_count: 0,
+            trains: {}
           });
         }
 
@@ -728,14 +816,23 @@
         model.is_rush = !!msg.payload.is_rush;
         updateTimeHUD();
 
+        // routes first, so tooltip can resolve train info by id
+        model.routes = Array.isArray(msg.payload.routes) ? msg.payload.routes : [];
 
         for (const st of (msg.payload.stations || [])) {
           const id = String(st.id);
           const s = model.stations.get(id);
-          if (s && typeof st.persons_count === "number") s.persons_count = st.persons_count;
-        }
+          if (!s) continue;
 
-        model.routes = Array.isArray(msg.payload.routes) ? msg.payload.routes : [];
+          if (typeof st.persons_count === "number") s.persons_count = st.persons_count;
+
+          // NEW: station trains statuses map (train_id -> flags)
+          if (st.trains && typeof st.trains === "object") {
+            s.trains = st.trains;
+          } else {
+            s.trains = {};
+          }
+        }
 
         setStats();
         requestRender();

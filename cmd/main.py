@@ -458,4 +458,4 @@ sim.add_station(s12, PassengersGenerator(base_rate=0.1, variation=0.6, rush_mult
 # sim.add_train_generator(route, [ivolga, ed4m], 300)
 sim.add_train_scheduled_generator(schedule)
 # старт
-sim.run(sim_seconds_per_real_second=1 * 60 * 60, render=False)
+sim.run(sim_seconds_per_real_second=1 * 30, render=False)
