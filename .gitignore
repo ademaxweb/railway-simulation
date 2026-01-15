@@ -3,3 +3,4 @@
 __pycache__
 stats/trains.json
 stats/plots
+stats/*.json

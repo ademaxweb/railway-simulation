@@ -8,7 +8,6 @@ from models.routes.route_stage_segment import RouteStageSegment
 from models.events.train_events import (
     TrainFinishedSegment,
     TrainArrivedAtStation,
-    TrainFinishedStationWait,
     TrainDepartedFromStation,
 )
 
@@ -23,8 +22,10 @@ class RouteRuntime:
         self.stage_runtime = None
         self.finished = False
 
+        self.total_delay: float = 0.0
+
         event_manager.subscribe(TrainFinishedSegment, self._on_finished_segment)
-        event_manager.subscribe(TrainFinishedStationWait, self._on_finished_station_wait)
+        event_manager.subscribe(TrainDepartedFromStation, self._on_train_departed_from_station)
 
         # стартуем с первой стадии
         self._enter_stage(self.route.stages[0])
@@ -43,9 +44,9 @@ class RouteRuntime:
         elif isinstance(stage, RouteStageSegment):
             speed = min(self.train.max_speed, stage.segment.max_speed)
             self.train.set_speed(speed)
-            self.event_manager.emit(
-                TrainDepartedFromStation(self.train, stage.segment.station_from)
-            )
+            # self.event_manager.emit(
+            #     TrainDepartedFromStation(self.train, stage.segment.station_from)
+            # )
 
         self.stage_runtime = StageRuntime(
             stage,
@@ -65,7 +66,7 @@ class RouteRuntime:
 
         self._enter_stage(self.route.stages[self.stage_index])
 
-    def _on_finished_station_wait(self, event: TrainFinishedStationWait):
+    def _on_train_departed_from_station(self, event: TrainDepartedFromStation):
         if event.train is not self.train:
             return
 
@@ -80,8 +81,11 @@ class RouteRuntime:
     def advance(self, dt: float) -> None:
         remaining: float = dt
 
-        while remaining > 0.0 and not self.finished:
+        while remaining > 0.0 and not self.finished and not self.stage_runtime.finished:
             remaining = self.stage_runtime.advance(remaining)
+
+        if remaining > 0.0 and not self.finished and self.stage_runtime.finished:
+            self.total_delay += remaining
 
     def __str__(self):
         return str(self.stage_runtime)

@@ -72,27 +72,27 @@ class PassengersGenerator:
 
         elif 8.5 <= hour_norm < 10.0:  # После пика: 8:30-10:00
             t = (hour_norm - 8.5) / 1.5
-            coefficient = 0.90 - 0.25 * t  # 90% → 65%
+            coefficient = 0.90 - 0.15 * t  # 90% → 65%
 
         elif 10.0 <= hour_norm < 17.0:  # День: 10:00-17:00
             t = (hour_norm - 10.0) / 7.0
-            coefficient = 0.65 - 0.15 * t  # 65% → 50%
+            coefficient = 0.75 - 0.15 * t  # 65% → 50%
 
         elif 17.0 <= hour_norm < 20.0:  # Вечерний подъем: 17:00-20:00
             if hour_norm < 18.5:  # Рост до 18:30
                 t = (hour_norm - 17.0) / 1.5
-                coefficient = 0.50 + 0.25 * math.sin(t * math.pi / 2)  # 50% → 75%
+                coefficient = 0.60 + 0.25 * math.sin(t * math.pi / 2)  # 50% → 75%
             else:  # 18:30-20:00
                 t = (hour_norm - 18.5) / 1.5
-                coefficient = 0.75 - 0.20 * t  # 75% → 55%
+                coefficient = 0.85 - 0.20 * t  # 75% → 55%
 
         elif 20.0 <= hour_norm < 24.0:  # Вечер: 20:00-0:00
             t = (hour_norm - 20.0) / 4.0
-            coefficient = 0.55 - 0.40 * t  # 55% → 15%
+            coefficient = 0.65 - 0.40 * t  # 55% → 15%
 
         elif 24.0 <= hour_norm <= 26.0:  # Ночь: 0:00-2:00
             t = (hour_norm - 24.0) / 2.0
-            coefficient = 0.15 - 0.10 * t  # 15% → 5%
+            coefficient = 0.25 - 0.10 * t  # 15% → 5%
 
         else:
             coefficient = 0.05

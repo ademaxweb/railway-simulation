@@ -30,7 +30,7 @@ class StageRuntime:
                 self.finished = True
                 self.progress_percentage = 100
                 self.event_manager.emit(
-                    TrainFinishedStationWait(self.train)
+                    TrainFinishedStationWait(self.train, self.stage.station)
                 )
                 return dt
             else:

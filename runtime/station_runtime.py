@@ -1,9 +1,9 @@
 import random
 from typing import Dict
-import math
+from dataclasses import dataclass
 from models.trains import Train
 from models.stations import Station
-from models.events.time_events import RushHourStarted, RushHourEnded
+from models.events.time_events import RushHourStarted, RushHourEnded, NewDayMarker
 from models.events.train_events import (
     TrainArrivedAtStation,
     TrainDepartedFromStation,
@@ -12,12 +12,51 @@ from models.events.train_events import (
 )
 from runtime.event_manager import EventManager
 from runtime.passengers_generator import PassengersGenerator
+from utils import ID
+
+@dataclass
+class TrainOnStation:
+    is_waiting_finished = False
+    is_boarding_finished = False
+    is_unloading_finished = False
+
+    total_delay: float = 0
+
+    @property
+    def is_finished(self) -> bool:
+        return (
+            self.is_waiting_finished and
+            self.is_boarding_finished and
+            self.is_unloading_finished
+        )
+
+    def finish_waiting(self):
+        self.is_waiting_finished = True
+
+    def finish_boarding(self):
+        self.is_boarding_finished = True
+
+    def finish_unloading(self):
+        self.is_unloading_finished = True
+
+    def add_delay(self, v: float):
+        self.total_delay += v
+
+    def to_dict(self) -> dict:
+        return {
+            "is_waiting_finished": self.is_waiting_finished,
+            "is_boarding_finished": self.is_boarding_finished,
+            "is_unloading_finished": self.is_unloading_finished,
+            "is_finished": self.is_finished,
+            "total_delay": round(self.total_delay, 2)
+        }
+
 
 
 class StationRuntime:
     # -------- параметры модели --------
     DOORS_PER_WAGON: int = 2
-    PERSONS_PER_DOOR_PER_SEC: float = 1.2
+    PERSONS_PER_DOOR_PER_SEC: float = 0.7
 
     BOARDING_VARIATION: float = 0.25
 
@@ -40,6 +79,10 @@ class StationRuntime:
         # сколько ещё нужно высадить
         self._unload_targets: Dict[Train, int] = {}
 
+        self._trains: Dict[Train, TrainOnStation] = {}
+
+        self.total_boarded = 0
+
         # -------- подписки --------
         event_manager.subscribe(RushHourStarted, generator.on_rush_started)
         event_manager.subscribe(RushHourEnded, generator.on_rush_ended)
@@ -50,6 +93,11 @@ class StationRuntime:
 
         event_manager.subscribe(TrainFinishedStationWait, self._on_train_finished_station_wait)
 
+    def get_train_on_station(self, train: Train) -> TrainOnStation | None:
+        return self._trains.get(train)
+
+    def get_trains(self) -> Dict[Train, TrainOnStation]:
+        return self._trains
     # -------- события --------
 
     def _on_train_arrived(self, event: TrainArrivedAtStation) -> None:
@@ -57,6 +105,7 @@ class StationRuntime:
             return
 
         train = event.train
+
 
         percent = random.uniform(
             self._unload_min,
@@ -67,16 +116,25 @@ class StationRuntime:
 
         to_unload = int(train.person_count * percent)
 
-        if to_unload > 0:
-            self._unloading_trains[train] = 0.0
-            self._unload_targets[train] = to_unload
-        else:
+        self._trains[train] = TrainOnStation()
+        self._unloading_trains[train] = 0.0
+        self._unload_targets[train] = to_unload
+
+        if to_unload <= 0:
             self.event_manager.emit(TrainFinishedUnloading(event.train, event.station))
 
     def _on_train_finished_unloading(self, event: TrainFinishedUnloading) -> None:
         if event.station is not self.station:
             return
 
+        train = event.train
+
+        # высадка завершена
+        self._unloading_trains.pop(train)
+        self._unload_targets.pop(train)
+        self._trains[train].finish_unloading()
+
+        # начало посадки
         self._boarding_trains[event.train] = 0.0
 
     def _on_train_departed(self, event: TrainDepartedFromStation) -> None:
@@ -88,16 +146,22 @@ class StationRuntime:
         self._unloading_trains.pop(train, None)
         self._boarding_trains.pop(train, None)
         self._unload_targets.pop(train, None)
+        self._trains.pop(train, None)
 
     def _on_train_finished_station_wait(self, event: TrainFinishedStationWait) -> None:
+        if event.station is not self.station:
+            return
+
         train = event.train
-        self._unloading_trains.pop(train, None)
-        self._boarding_trains.pop(train, None)
-        self._unload_targets.pop(train, None)
+
+        self._trains[train].finish_waiting()
     # -------- симуляция --------
 
     def advance(self, dt: float, sim_time: float) -> None:
-        # генерация пассажиров на станции
+        """ генерация пассажиров на станции """
+
+        self._process_trains(dt)
+
         generated = self.generator.generate(dt, sim_time)
 
         if generated > 0:
@@ -108,9 +172,16 @@ class StationRuntime:
             if factor > 0.85:
                 self.station.add_person(generated)
 
-        self._process_unloading(dt)
 
+
+    # -------- поезда на станции --------
+    def _process_trains(self, dt:float) -> None:
+        self._process_unloading(dt)
         self._process_boarding(dt)
+
+        for train in list(self._trains.keys()):
+            if self._trains[train].is_finished:
+                self.event_manager.emit(TrainDepartedFromStation(train, self.station))
 
     # -------- высадка --------
 
@@ -141,11 +212,10 @@ class StationRuntime:
             self._unloading_trains[train] -= unloaded
             self._unload_targets[train] -= unloaded
 
-            if self._unload_targets[train] <= 0:
-                # высадка завершена
-                self._unloading_trains.pop(train)
-                self._unload_targets.pop(train)
+            if self._trains[train].is_waiting_finished:
+                self._trains[train].add_delay(dt)
 
+            if self._unload_targets[train] <= 0:
                 self.event_manager.emit(
                     TrainFinishedUnloading(train, self.station)
                 )
@@ -158,6 +228,12 @@ class StationRuntime:
             if wagon_count == 0:
                 continue
 
+            if self.station.persons_count == 0 or train.person_count >= train.capacity:
+                self._trains[train].finish_boarding()
+
+            if self._trains[train].is_waiting_finished:
+                self._trains[train].add_delay(dt)
+
             base_rate = (
                 wagon_count
                 * self.DOORS_PER_WAGON
@@ -166,7 +242,7 @@ class StationRuntime:
 
             noise = random.uniform(
                 1.0 - self.BOARDING_VARIATION,
-                1.0 + self.BOARDING_VARIATION,
+                1.0,
             )
 
             rate = base_rate * noise
@@ -181,7 +257,11 @@ class StationRuntime:
                 continue
 
             boarded = train.add_person(available)
+
+            self.total_boarded += boarded
+
             self.station.remove_person(boarded)
+
 
             self._boarding_trains[train] -= boarded
 

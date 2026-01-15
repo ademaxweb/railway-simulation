@@ -16,10 +16,10 @@ class SimData:
 
 
     def add_route_data(self, rr: RouteRuntime):
-        self._routes.append(SimDataRoute(rr.current_stage.stage, rr.current_stage.progress_percentage, rr.train))
+        self._routes.append(SimDataRoute(rr))
 
     def add_station_data(self, sr: StationRuntime):
-        self._stations.append(SimDataStation(sr.station))
+        self._stations.append(SimDataStation(sr))
 
     def set_rush_status(self, b: bool):
         self._rush_status = b

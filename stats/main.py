@@ -1,13 +1,17 @@
 import json
+import sys
 from pathlib import Path
 import matplotlib.pyplot as plt
-import numpy as np
+import sys
 
-JSON_PATH = Path("stats/trains.json")
+JSON_PATH = Path(f"stats/{sys.argv[1]}")
+print(JSON_PATH)
 OUTPUT_DIR = Path("stats/plots")
 METRIC_KEYS = ['trains_count', 'total_persons', 'avg_persons_in_train', 'avg_fullness_percentage', 'avg_speed',
                'max_speed', 'max_fullness_percentage', 'max_persons', 'min_speed', 'min_fullness_percentage',
                'min_persons']
+
+METRIC_KEYS_DELAYS = ["max_delay", "min_delay", "avg_delay", "total_delay"]
 
 
 def load_metrics(path: Path):
@@ -19,16 +23,16 @@ def build_time_label(t: dict) -> str:
     return f'{t["h"]:02d}:{t["m"]:02d}'  # Убрали секунды для краткости
 
 
-def plot_metric(data: list, metric_key: str):
+def plot_metric(data: list, metric_key: str, top_metric_key = "trains"):
     times = []
     values = []
 
     # Собираем данные
     for item in data:
         times.append(build_time_label(item["time"]))
-        values.append(item["data"]["trains"][metric_key])
+        values.append(item["data"][top_metric_key][metric_key])
 
-    OUTPUT_DIR.mkdir(exist_ok=True)
+    (OUTPUT_DIR / top_metric_key).mkdir(parents=True, exist_ok=True)
 
     plt.figure(figsize=(12, 6))
 
@@ -87,7 +91,7 @@ def plot_metric(data: list, metric_key: str):
 
     plt.tight_layout()
 
-    output_path = OUTPUT_DIR / f"{metric_key}.png"
+    output_path = OUTPUT_DIR / top_metric_key / f"{metric_key}.png"
     plt.savefig(output_path, dpi=300)
     plt.close()
 
@@ -106,6 +110,9 @@ def main():
 
     for mk in METRIC_KEYS:
         plot_metric(data, mk)
+
+    for mkd in METRIC_KEYS_DELAYS:
+        plot_metric(data, mkd, "delays")
 
 
 if __name__ == "__main__":

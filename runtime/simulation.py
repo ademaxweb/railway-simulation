@@ -1,6 +1,8 @@
 import time
 from typing import List
 
+from models.events.time_events import NewDayMarker
+from models.statistics.statistics_data_daily import StatisticsDataDaily
 from runtime.route_runtime import RouteRuntime
 from runtime.simdata.sim_data import SimData
 from runtime.station_runtime import StationRuntime
@@ -16,7 +18,7 @@ from models.routes.route import Route
 from models.trains import Train, TrainConfig
 from models.stations import Station
 from models.events.train_events import TrainGenerated
-from models.events.statistics_event import TrainsStatistics, SaveStatistics
+from models.events.statistics_event import TrainsStatistics, SaveStatistics, SaveDailyStatistics, DelayStatistics
 from models.events.simulation_data_event import SimulationDataUpdate
 
 
@@ -44,6 +46,10 @@ class Simulation:
         self._statistics_runtime = StatisticsRuntime(self.event_manager)
 
 
+        self._min_delay_time: float = 100000000.0
+        self._max_delay_time: float = 0.0
+
+
         # runtime временных режимов (час-пик, временные маркеры)
         self._time_mode_runtime: TimeModeRuntime = TimeModeRuntime(
             event_manager=self.event_manager,
@@ -59,6 +65,7 @@ class Simulation:
 
 
         self.event_manager.subscribe(TrainGenerated, self._on_train_generated)
+        self.event_manager.subscribe(NewDayMarker, self._on_new_day)
 
     # ---------- EventManager  ----------
     def get_event_manager(self) -> EventManager:
@@ -135,6 +142,7 @@ class Simulation:
 
             # Разбиваем на куски не больше max_dt_sim
             remaining_sim_dt = target_sim_dt
+
             while remaining_sim_dt > 0:
                 step_dt = min(max_dt_sim, remaining_sim_dt)
 
@@ -147,6 +155,8 @@ class Simulation:
                 for runtime in list(self._route_runtimes):
                     runtime.advance(step_dt)
                     if runtime.finished:
+                        self._max_delay_time = max(self._max_delay_time, runtime.total_delay)
+                        self._min_delay_time = min(self._max_delay_time, runtime.total_delay)
                         self._route_runtimes.remove(runtime)
 
                 for sr in self._station_runtimes:
@@ -168,13 +178,15 @@ class Simulation:
                 if render:
                     self.render()
 
+                # print("test")
+
                 sim_data = SimData(sim_time=self.sim_time)
                 sim_data.set_rush_status(self._rush_hour_runtime.is_rush)
 
                 for rr in list(self._route_runtimes):
                     sim_data.add_route_data(rr)
 
-                for sr in self._station_runtimes:
+                for sr in list(self._station_runtimes):
                     sim_data.add_station_data(sr)
 
                 self.event_manager.emit(SimulationDataUpdate(sim_data))
@@ -190,10 +202,45 @@ class Simulation:
             )
         )
 
+        self.event_manager.emit(
+            DelayStatistics(
+                list(map(lambda rr: rr.total_delay, self._route_runtimes))
+            )
+        )
+
     # ---------- обработчики событий ----------
 
     def _on_train_generated(self, event: TrainGenerated) -> None:
         self.add_route(event.route, event.train)
+
+
+    def _on_new_day(self, event: NewDayMarker):
+        total_persons = 0
+        stations = []
+
+
+        for sr in list(self._station_runtimes):
+            persons = sr.total_boarded
+            sr.total_boarded = 0
+
+            total_persons += persons
+            stations.append({
+                "station": sr.station.name,
+                "persons": persons
+            })
+
+        self.event_manager.emit(
+            SaveDailyStatistics(
+                SimDate(self.sim_time),
+                StatisticsDataDaily(
+                    total_persons=total_persons,
+                    by_stations=stations,
+                    max_delay=self._max_delay_time,
+                    min_delay=self._min_delay_time
+                )
+            )
+        )
+
 
     # ---------- вывод ---------
 

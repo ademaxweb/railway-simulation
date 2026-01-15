@@ -34,6 +34,9 @@ class ScheduleTime:
             second=seconds % 60
         )
 
+    def __sub__(self, other: 'ScheduleTime'):
+        return ScheduleTime(self.hour - other.hour, self.minute - other.minute, self.second - other.second)
+
 
 @dataclass
 class TrainScheduleEntry:
@@ -52,10 +55,14 @@ class TrainsSchedule:
         self._schedule: Dict[ScheduleTime, List[TrainScheduleEntry]] = {}
 
         for s in schedule:
-            if not s.departure_time in self._schedule:
-                self._schedule[s.departure_time] = []
+            first_station = s.route.get_first_station()
+            t = s.departure_time - ScheduleTime.from_seconds(int(first_station.stop_time))
 
-            self._schedule[s.departure_time].append(s)
+            if not s.departure_time in self._schedule:
+
+                self._schedule[t] = []
+
+            self._schedule[t].append(s)
 
     def get_entries_at_seconds(self, seconds: float | int) -> List[TrainScheduleEntry]:
         return self.get_entries_at_time(ScheduleTime.from_seconds(int(seconds)))

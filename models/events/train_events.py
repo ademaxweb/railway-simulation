@@ -26,7 +26,8 @@ class TrainArrivedAtStation(Event):
 
 
 class TrainFinishedStationWait(Event):
-    def __init__(self, train: Train):
+    def __init__(self, train: Train, station: Station):
+        self.station = station
         self.train = train
         super().__init__()
 
