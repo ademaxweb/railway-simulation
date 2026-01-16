@@ -7,6 +7,7 @@ import random
 from models.events.train_events import TrainGenerated
 from runtime.event_manager import EventManager
 from models.events.time_events import NewDayMarker
+from models.events.time_events import RushHourStarted, RushHourEnded
 
 
 
@@ -85,6 +86,17 @@ class ScheduledTrainGenerator:
 
         self._event_manager.subscribe(NewDayMarker, self._on_new_day)
 
+        self._rush_multiplier = 1
+
+        self._event_manager.subscribe(RushHourStarted, self._on_rush_started)
+        self._event_manager.subscribe(RushHourEnded, self._on_rush_ended)
+
+    def _on_rush_started(self, e: RushHourStarted):
+        self._rush_multiplier = 2
+
+    def _on_rush_ended(self, e: RushHourEnded):
+        self._rush_multiplier = 1
+
     def advance(self, sim_time: float) -> None:
         """
         Проверяет, нужно ли отправить поезда в текущую секунду.
@@ -110,7 +122,7 @@ class ScheduledTrainGenerator:
         """Отправляет поезд по расписанию"""
         train = create_train(entry.train_config)
         if entry.not_clear:
-            train.add_person(random.randint(100, 400))
+            train.add_person(random.randint(100 * self._rush_multiplier, 300 * self._rush_multiplier))
         self._event_manager.emit(TrainGenerated(train, entry.route))
 
     def _on_new_day(self, e: NewDayMarker):

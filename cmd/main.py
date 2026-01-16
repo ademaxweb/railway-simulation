@@ -23,14 +23,14 @@ s1 = Station(StationConfig(ID(1), "Одинцово", 800, Pos(0, 0)))
 s2 = Station(StationConfig(ID(2), "Баковка", 500, Pos(2.36, 0)))
 s3 = Station(StationConfig(ID(3), "Сколково", 1000, Pos(4.99, 0)))
 s4 = Station(StationConfig(ID(4), "Немчиновка", 400, Pos(7.73, 0)))
-s5 = Station(StationConfig(ID(5), "Сетунь", 500, Pos(9.3, 0)))
-s6 = Station(StationConfig(ID(6), "Рабочий посёлок", 200, Pos(10.73, 0)))
-s7 = Station(StationConfig(ID(7), "Кунцевская", 200, Pos(12.71, 0)))
-s8 = Station(StationConfig(ID(8), "Славянский бульвар", 200, Pos(14.19, 0)))
-s9 = Station(StationConfig(ID(9), "Фили", 200, Pos(17.43, 0)))
+s5 = Station(StationConfig(ID(5), "Сетунь", 400, Pos(9.3, 0)))
+s6 = Station(StationConfig(ID(6), "Рабочий посёлок", 400, Pos(10.73, 0)))
+s7 = Station(StationConfig(ID(7), "Кунцевская", 400, Pos(12.71, 0)))
+s8 = Station(StationConfig(ID(8), "Славянский бульвар", 400, Pos(14.19, 0)))
+s9 = Station(StationConfig(ID(9), "Фили", 400, Pos(17.43, 0)))
 s10 = Station(StationConfig(ID(10), "Тестовская", 200, Pos(19.33, 0)))
 s11 = Station(StationConfig(ID(11), "Беговая", 200, Pos(21.02, 0)))
-s12 = Station(StationConfig(ID(12), "Белорусский вокзал", 200, Pos(23.68, 0)))
+s12 = Station(StationConfig(ID(12), "Белорусский вокзал", 1000, Pos(23.68, 0)))
 
 
 
@@ -127,7 +127,7 @@ aero = train_config_from_dict({
     "type": "passenger",
     "max_speed": 160,
     "wagon_count": 6,
-    "wagon_capacity": 180
+    "wagon_capacity": 200
 })
 
 ivolga = train_config_from_dict({
@@ -138,12 +138,12 @@ ivolga = train_config_from_dict({
     "wagon_capacity": 120
 })
 
-ed4m = train_config_from_dict({
-    "model_name": "ЭД4М",
+ep2d = train_config_from_dict({
+    "model_name": "ЭП2Д",
     "type": "passenger",
-    "max_speed": 90,
-    "wagon_count": 12,
-    "wagon_capacity": 140
+    "max_speed": 130,
+    "wagon_count": 11,
+    "wagon_capacity": 160
 })
 
 
@@ -204,229 +204,229 @@ route1 = Route([
 schedule = TrainsSchedule(
     [
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=4, minute=56)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=1), not_clear=True),
-        # TrainScheduleEntry(route=route1, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=4)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=1), not_clear=True),
+        # TrainScheduleEntry(route=route1, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=4)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=5, minute=11)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=5, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=31), not_clear=True),
-        # TrainScheduleEntry(route=route1, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=35)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=37), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=31), not_clear=True),
+        # TrainScheduleEntry(route=route1, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=35)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=37), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=5, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=5, minute=46), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=5, minute=46), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=5, minute=56)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=6, minute=1), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=6, minute=7), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=6, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=6, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=6, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=6, minute=17), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=6, minute=17), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=6, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=6, minute=31), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=6, minute=31), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=6, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=6, minute=47), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=6, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=6, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=1), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=7), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=7, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=16), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=22), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=7, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=36), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=7, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=7, minute=47), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=7, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=7, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=1), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=7), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=8, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=16), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=22), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=8, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=36), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=8, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=8, minute=47), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=8, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=8, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=1), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=7), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=9, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=16), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=22), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=9, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=36), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=9, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=9, minute=47), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=9, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=9, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=1), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=7), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=10, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=16), not_clear=True),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=22), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=10, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=10, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=10, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=10, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=10, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=11, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=11, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=11, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=11, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=11, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=11, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=12, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=16)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=12, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=12, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=12, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=12, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=12, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=13, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=13, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=13, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=13, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=13, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=13, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=14, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=14, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=14, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=14, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=14, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=14, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=15, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=15, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=15, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=15, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=15, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=15, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=16, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=16, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=16, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=16, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=16, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=16, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=17, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=17, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=17, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=17, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=17, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=17, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=18, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=18, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=18, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=18, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=18, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=18, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=19, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=19, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=19, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=19, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=19, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=19, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=20, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=16), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=22), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=20, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=36), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=20, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=20, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=20, minute=47), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=20, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=1), not_clear=True),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=7), not_clear=True),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=21, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=16)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=22)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=21, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=36)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=21, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=21, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=21, minute=47)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=21, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=1)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=7)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=22, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=16)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=22)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=22, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=36)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=22, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=22, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=22, minute=47)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=22, minute=56)),
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=1)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=7)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=23, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=16)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=22)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=23, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=36)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=23, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=23, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=23, minute=47)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=23, minute=56)),
 
         # Next hour
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=1)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=7)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=1)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=7)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=0, minute=11)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=16)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=22)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=16)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=22)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=0, minute=26)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=36)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=36)),
         TrainScheduleEntry(route=route1, train_config=ivolga, departure_time=ScheduleTime(hour=0, minute=41)),
-        TrainScheduleEntry(route=route, train_config=ed4m, departure_time=ScheduleTime(hour=0, minute=47)),
+        TrainScheduleEntry(route=route, train_config=ep2d, departure_time=ScheduleTime(hour=0, minute=47)),
         TrainScheduleEntry(route=route1, train_config=aero, departure_time=ScheduleTime(hour=0, minute=56)),
 
     ]
 )
 # ---------- Simulation ----------
-sim = Simulation(render_interval=1 / 30, start_time=7 * 60 * 60)
+sim = Simulation(render_interval=1 / 30, start_time=6 * 60 * 60)
 em: EventManager = sim.get_event_manager()
 
 # ---------- Server (parallel) ----------
@@ -439,11 +439,11 @@ server_thread = threading.Thread(target=server.run, name="server-thread", daemon
 server_thread.start()
 
 # # пассажиропотоки (чел / сек)
-sim.add_station(s1, PassengersGenerator(base_rate=0.22, variation=0.6, rush_multiplier=4), unload_max=0.0) # Одинцово
-sim.add_station(s2, PassengersGenerator(base_rate=0.09, variation=0.6, rush_multiplier=3), unload_max=0.01) # Баковка
-sim.add_station(s3, PassengersGenerator(base_rate=0.199, variation=0.6, rush_multiplier=4), unload_max=0.03) # Сколково
+sim.add_station(s1, PassengersGenerator(base_rate=0.22, variation=0.6, rush_multiplier=4), unload_max=0.03) # Одинцово
+sim.add_station(s2, PassengersGenerator(base_rate=0.09, variation=0.6, rush_multiplier=2.75), unload_max=0.01) # Баковка
+sim.add_station(s3, PassengersGenerator(base_rate=0.19, variation=0.6, rush_multiplier=4), unload_max=0.03) # Сколково
 # sim.add_station(s3, PassengersGenerator(base_rate=8, variation=0.4, rush_multiplier=2.6), unload_max=0.03) # Сколково
-sim.add_station(s4, PassengersGenerator(base_rate=0.08, variation=0.6, rush_multiplier=2), unload_max=0.01) # Немчиновка
+sim.add_station(s4, PassengersGenerator(base_rate=0.065, variation=0.6, rush_multiplier=2), unload_max=0.01) # Немчиновка
 sim.add_station(s5, PassengersGenerator(base_rate=0.046, variation=0.6, rush_multiplier=1.87), unload_min=0.02, unload_max=0.1) # Сетунь
 sim.add_station(s6, PassengersGenerator(base_rate=0.04, variation=0.6, rush_multiplier=1.79), unload_min=0.03, unload_max=0.1) # Рабочий Поселок
 sim.add_station(s7, PassengersGenerator(base_rate=0.036, variation=0.6, rush_multiplier=1.1), unload_min=0.4, unload_max=0.5) # Кунцевская
@@ -451,11 +451,11 @@ sim.add_station(s8, PassengersGenerator(base_rate=0.07, variation=0.6, rush_mult
 sim.add_station(s9, PassengersGenerator(base_rate=0.028, variation=0.6, rush_multiplier=1.1), unload_min=0.1, unload_max=0.15) # Фили
 sim.add_station(s10, PassengersGenerator(base_rate=0.021, variation=0.6, rush_multiplier=1), unload_min=0.1, unload_max=0.2) # Тестовская
 sim.add_station(s11, PassengersGenerator(base_rate=0.026, variation=0.6, rush_multiplier=1), unload_min=0.3, unload_max=0.5) #Беговая
-sim.add_station(s12, PassengersGenerator(base_rate=0.1, variation=0.6, rush_multiplier=1.3), unload_min=0.7, unload_max=0.9) #Белорусский
+sim.add_station(s12, PassengersGenerator(base_rate=0.0651, variation=0.6, rush_multiplier=1.3), unload_min=0.7, unload_max=0.9) #Белорусский
 
 
 # маршруты
-# sim.add_train_generator(route, [ivolga, ed4m], 300)
+# sim.add_train_generator(route, [ivolga, ep2d], 300)
 sim.add_train_scheduled_generator(schedule)
 # старт
-sim.run(sim_seconds_per_real_second=1 * 30, render=False)
+sim.run(sim_seconds_per_real_second=1 * 20, render=False)

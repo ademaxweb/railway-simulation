@@ -23,7 +23,7 @@ class PassengersGenerator:
             seed = random.randint(0, 2 ** 32 - 1)
         self._random = random.Random(seed)
 
-        self._rush_factor = 1.0  # Убрали _accumulator, т.к. он не нужен для Пуассона
+        self._rush_factor = 1.0
 
     # --- реакции на события ---
     def on_rush_started(self, event):
@@ -114,12 +114,19 @@ class PassengersGenerator:
         # Ожидаемое количество пассажиров за интервал dt
         lambda_param = rate_per_second * dt
 
+
         # Для очень маленьких lambda (редкие события)
         if lambda_param < 1e-10:
             return 0
 
         # Генерация по распределению Пуассона
-        return self._poisson(lambda_param)
+        x = self._poisson(lambda_param)
+
+        # if x > 0:
+            # print(f"lambda: {lambda_param} | poisson: {x}")
+            # pass
+
+        return x
 
     def _poisson(self, lambda_param: float) -> int:
         """

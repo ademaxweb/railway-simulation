@@ -56,7 +56,7 @@ class TrainOnStation:
 class StationRuntime:
     # -------- параметры модели --------
     DOORS_PER_WAGON: int = 2
-    PERSONS_PER_DOOR_PER_SEC: float = 0.7
+    PERSONS_PER_DOOR_PER_SEC: float = 0.6
 
     BOARDING_VARIATION: float = 0.25
 
@@ -112,7 +112,7 @@ class StationRuntime:
             self._unload_max,
         )
 
-        # print(f"{self.station.name} {percent}")
+            # print(f"{self.station.name} {percent}")
 
         to_unload = int(train.person_count * percent)
 
@@ -165,7 +165,7 @@ class StationRuntime:
         generated = self.generator.generate(dt, sim_time)
 
         if generated > 0:
-            if self.station.fullness_percentage > 80:
+            if self.station.persons_count > 220:
                 factor = random.uniform(0, 1)
             else: factor = 1
 
